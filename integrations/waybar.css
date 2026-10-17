@@ -1,0 +1,4 @@
+#custom-omapet { color: #9bd9b7; padding: 0 10px; }
+#custom-omapet.sick, #custom-omapet.hungry, #custom-omapet.messy { color: #e5ba78; }
+#custom-omapet.sleeping, #custom-omapet.vacation { color: #a6adc8; }
+#custom-omapet.departed { color: #e89aab; }

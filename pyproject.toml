@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omapet"
+version = "0.1.0"
+description = "A GitHub-grown companion for Omarchy Quattro, Waybar and your terminal"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = []
+
+[project.scripts]
+omapet = "omapet.cli:main"
+omapet-arena = "omapet.arena:main"
+
+[tool.setuptools]
+packages = ["omapet"]

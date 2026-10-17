@@ -1,0 +1,11 @@
+// Merge into your Waybar config and add "custom/omapet" to modules-right.
+{
+  "custom/omapet": {
+    "exec": "omapet waybar",
+    "return-type": "json",
+    "interval": 15,
+    "on-click": "omarchy-launch-terminal omapet tui",
+    "on-click-right": "omapet overlay toggle",
+    "on-click-middle": "omapet care feed"
+  }
+}

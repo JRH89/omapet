@@ -1,0 +1,6 @@
+[Unit]
+Description=Read GitHub contribution metrics for Omapet
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/omapet sync

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "jrh89.omapet",
+  "name": "Omapet",
+  "version": "0.1.0",
+  "author": "jrh89",
+  "license": "MIT",
+  "description": "A GitHub-grown virtual companion with care, a terminal arena, and a desktop habitat.",
+  "kinds": ["bar-widget"],
+  "entryPoints": {"barWidget": "BarWidget.qml"},
+  "barWidget": {"displayName": "Omapet", "category": "Utility", "allowMultiple": false, "defaultSection": "right"}
+}
