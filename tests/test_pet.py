@@ -52,11 +52,26 @@ class PetTests(unittest.TestCase):
     def test_sleep_and_medicine(self):
         s = core.fresh(now=1); s['energy'] = 20
         core.care(s, 'sleep'); core.advance(s, 3601)
-        self.assertAlmostEqual(s['energy'], 30)
+        self.assertAlmostEqual(s['energy'], 40)
         s.update(sick=True, food=5, hygiene=0)
         with self.assertRaises(ValueError): core.care(s, 'medicine')
         core.care(s, 'feed'); core.care(s, 'clean'); core.care(s, 'medicine')
         self.assertFalse(s['sick'])
+
+    def test_energy_balance_and_feeding_limits(self):
+        s = core.fresh(now=1); s.update(food=50, energy=80)
+        core.advance(s, 3601)
+        self.assertAlmostEqual(s['energy'], 79)
+        core.care(s, 'feed')
+        self.assertAlmostEqual(s['energy'], 87)
+        core.care(s, 'play')
+        self.assertAlmostEqual(s['energy'], 81)
+        s.update(food=70, energy=98)
+        core.care(s, 'feed')
+        self.assertEqual(s['energy'], 100)
+        s['energy'] = 50
+        with self.assertRaisesRegex(ValueError, 'Already full'): core.care(s, 'feed')
+        self.assertEqual(s['energy'], 50)
 
     def test_polling_does_not_change_decay(self):
         a, b = core.fresh(now=1), core.fresh(now=1)

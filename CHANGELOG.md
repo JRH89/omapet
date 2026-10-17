@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Make energy easier to maintain: meals restore 8 energy, sleep restores 20/hour,
+  awake drain is 1/hour, and playing costs 6 energy.
+
 - Add an optional fullscreen pixel-pet screensaver with direction changes, multi-monitor
   support, a habitat preview button, and reversible Omarchy idle integration.
   The screensaver only reads appearance and never modifies the pet.

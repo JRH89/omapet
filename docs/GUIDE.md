@@ -104,7 +104,9 @@ TUI keys: **f** feed, **c** clean, **s** sleep/wake, **p** play, **m** medicine,
 **r** revive, **q** quit. `omapet care ACTION` exposes the same actions to scripts.
 
 Food, cleanliness, energy, and joy decay with elapsed real time. Feeding makes
-crumbs; playing costs food and energy. Sleep restores 10 energy/hour and slows
+crumbs and restores 8 energy (up to 100); a full pet cannot eat again. Playing
+costs 6 energy and 5 food. Awake pets lose 1 energy/hour. Sleep restores
+20 energy/hour and slows
 hunger. Danger means food <10, cleanliness <10, or energy <5. Six continuous hours
 of danger cause sickness; danger or sickness costs 2.5 health/hour. Safe, healthy
 conditions restore 1.5 health/hour. Feed and clean before administering medicine.

@@ -58,7 +58,7 @@ def advance(s, now=None):
         s['food'] = clamp(s['food'] - dt * (1.3 if s['sleeping'] else 2.5))
         s['hygiene'] = clamp(s['hygiene'] - dt * 1.6)
         s['joy'] = clamp(s['joy'] - dt * .8)
-        s['energy'] = clamp(s['energy'] + dt * (10 if s['sleeping'] else -2))
+        s['energy'] = clamp(s['energy'] + dt * (20 if s['sleeping'] else -1))
         danger = s['food'] < 10 or s['hygiene'] < 10 or s['energy'] < 5
         s['neglect'] = s['neglect'] + dt if danger else max(0, s['neglect'] - dt)
         s['sick'] = s['sick'] or s['neglect'] >= 6
@@ -93,8 +93,9 @@ def care(s, action):
         if s['food'] > 90:
             raise ValueError('Already full')
         s['food'] = clamp(s['food'] + 30)
+        s['energy'] = clamp(s['energy'] + 8)
         s['hygiene'] = clamp(s['hygiene'] - 8)
-        s['message'] = 'Crunch crunch! Time to clean the crumbs.'
+        s['message'] = 'Crunch crunch! A little energy boost, and a few crumbs.'
     elif action == 'clean':
         s['hygiene'] = 100.
         s['message'] = 'A sparkling home and a happy companion.'
@@ -108,7 +109,7 @@ def care(s, action):
         if s['sleeping'] or s['energy'] < 15:
             raise ValueError('Rest before playing')
         s['joy'] = clamp(s['joy'] + 25)
-        s['energy'] -= 10
+        s['energy'] -= 6
         s['food'] = clamp(s['food'] - 5)
         s['message'] = 'A tiny adventure!'
     elif action == 'medicine':

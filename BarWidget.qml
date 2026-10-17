@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs.Ui as Ui
+import qs.Commons as Commons
 
 Ui.BarWidget {
     id: root
@@ -12,6 +13,7 @@ Ui.BarWidget {
     function close() {}
     function toggle() { open() }
     property bool opened: false
+    readonly property var petIcons: ({"cat": "󰄛", "fox": "󰈹", "bunny": "󰤇", "frog": "󰏩", "bear": "󱣻", "owl": "󰏒", "slime": "󰱱", "robot": "󰚩", "penguin": "󰻀", "snake": "󱔎", "gopher": "󱌧", "duck": "󰇥"})
     Ui.WidgetButton {
         id: button
         anchors.fill: parent
@@ -27,13 +29,15 @@ Ui.BarWidget {
         Row {
             id: content
             anchors.centerIn: parent
-            spacing: 4
-            PetSprite {
-                width: 24; height: 24
+            spacing: 7
+            layoutDirection: Qt.RightToLeft
+            Text {
                 anchors.verticalCenter: parent.verticalCenter
-                character: model.pet.character || "cat"
-                mood: model.pet.status
-                animated: false
+                text: root.petIcons[model.pet.character] || "󰏩"
+                color: button.foreground
+                font.family: button.fontFamily
+                font.pixelSize: Commons.Style.bar.iconFont
+                renderType: Text.NativeRendering
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
