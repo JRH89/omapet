@@ -224,6 +224,12 @@ Item {
                     rect(x+2,y+2,2,2,"#ffffff");
                 }
             }
+            if (root.effect === "bonk") {
+                for (let i=0;i<3;i++) {
+                    let x=25+i*31, y=12+(i%2)*5-(f%3)*2;
+                    rect(x-4,y,9,2,"#ffe6a0"); rect(x,y-4,2,10,"#ffe6a0");
+                }
+            }
             if (asleep) { c.fillStyle="#b9d7e4"; c.font="bold 14px monospace"; c.fillText("z",91,27-(f%20)/2); c.fillText("Z",102,16-(f%20)/3) }
         }
     }

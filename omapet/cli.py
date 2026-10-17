@@ -23,6 +23,10 @@ def main():
     desktop.add_argument('value', choices=['simple', 'detailed', 'toggle', 'on', 'off'])
     pos = sub.add_parser('position', help='Save the desktop habitat position')
     pos.add_argument('x', type=float); pos.add_argument('y', type=float); pos.add_argument('--screen', default='')
+    hit = sub.add_parser('bonk', help='Record an on-screen roaming impact')
+    hit.add_argument('x', type=float); hit.add_argument('y', type=float); hit.add_argument('--screen', default='')
+    fix = sub.add_parser('repair', help='Repair one screen crack, or all for keyboard access')
+    fix.add_argument('crack_id')
     arena = sub.add_parser('arena'); arena_sub = arena.add_subparsers(dest='action')
     conn = arena_sub.add_parser('connect'); conn.add_argument('url')
     for cmd in ('status', 'queue', 'leave'): arena_sub.add_parser(cmd)
@@ -54,6 +58,12 @@ def main():
             elif args.command == 'position':
                 from .desktop import position
                 position(s, args.x, args.y, args.screen)
+            elif args.command == 'bonk':
+                from .desktop import bonk
+                bonk(s, args.x, args.y, args.screen)
+            elif args.command == 'repair':
+                from .desktop import repair
+                repair(s, args.crack_id)
             elif args.command == 'desktop':
                 from .desktop import configure
                 configure(s, args.setting, args.value)

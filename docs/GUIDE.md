@@ -27,9 +27,15 @@ Roaming does not overwrite the habitat's saved position.
 **Let out ↗** releases an awake, healthy companion with at least 20 food and energy.
 Hover over a blocked Let out button to see exactly what your pet needs first.
 He runs around the current screen, bouncing away from its edges. Click him to bring
-him home. Only the small moving pet window accepts input; there is no full-screen
-mouse interception. Playtime is cosmetic and doesn't damage your pet or spend XP.
-Sleep, sickness, low food/energy, or vacation automatically end roaming.
+him home once any screen cracks are repaired. Occasionally he bonks the screen,
+pauses briefly, and leaves a pretend glass crack. Click each crack's **Repair** badge
+to patch it with an animation. Up to four cracks can appear; once you start repairing,
+he stops making new ones until his next outing. He keeps running between bonks.
+Only the small pet and crack windows accept input; there is no full-screen mouse
+interception. Playtime doesn't damage your pet or spend XP. Press **x** in the TUI
+to repair one crack, or run `omapet repair all` for keyboard access.
+Sleep, sickness, low food/energy, or vacation end roaming after all cracks are fixed;
+an exhausted pet waits outside while repairs are pending.
 
 Surprise escapes are on by default. After a 15-minute grace period, each minute has
 an 8% chance to release a visible, eligible pet (roughly 12.5 more minutes on average).

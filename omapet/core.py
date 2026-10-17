@@ -27,7 +27,7 @@ def fresh(name='Sprout', now=None):
                 updated=now or time.time(), xp=0, health=100., food=85., energy=85.,
                 hygiene=100., joy=80., sleeping=False, vacation=False, hardcore=False,
                 dead=False, sick=False, neglect=0., totals={k: 0 for k in KINDS},
-                days={}, account=None, synced=None, battle_rewards=[], overlay=False,
+                cracks=[], repairing_cracks=False, days={}, account=None, synced=None, battle_rewards=[], overlay=False,
                 message='Welcome home. Feed, clean, play, and grow together.')
 
 
@@ -182,7 +182,9 @@ def store():
         s.setdefault('desktop_view', 'simple')
         s.setdefault('escapes', True)
         s.setdefault('roaming', False)
+        s.setdefault('cracks', [])
+        s.setdefault('repairing_cracks', False)
         advance(s)
-        if not can_roam(s): s['roaming'] = False
+        if not can_roam(s) and not s['cracks']: s['roaming'] = False
         yield s
         atomic_json(path, s)

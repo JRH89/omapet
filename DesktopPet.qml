@@ -8,7 +8,25 @@ Item {
     required property var model
     readonly property string roamHint: model.pet.can_roam === true ? "Let out · click your pet outside to bring it home" : (model.pet.roam_block_reason || "Checking whether your pet is ready…")
     readonly property bool detailed: model.pet.desktop_view === "detailed"
-    readonly property bool roaming: model.pet.roaming === true && model.pet.can_roam === true
+    readonly property int crackCount: (model.pet.cracks || []).length
+    readonly property bool roaming: model.pet.roaming === true && (model.pet.can_roam === true || crackCount > 0)
+    property var crackItems: []
+    property bool bonking: false
+    property double nextBonk: 0
+    property double seenBonk: 0
+    function syncCracks() {
+        let incoming = model.pet.cracks || []
+        if (JSON.stringify(incoming) !== JSON.stringify(crackItems))
+            crackItems = incoming.map(c => crackItems.find(old => old.id === c.id) || c)
+    }
+    function tryBonk() {
+        let p = model.pet, now = Date.now()
+        if (!roaming || !p.overlay || !p.can_roam || p.repairing_cracks || crackCount >= 4 || now < nextBonk) return
+        if (now / 1000 - (p.last_bonk_at || 0) < 15) return
+        nextBonk = now + 15000
+        model.run(["bonk", String(Math.round(roamX + 72 + (velocityX < 0 ? -25 : 25))),
+                   String(Math.round(roamY + 52)), "--screen", habitat.screen.name])
+    }
     property bool dragging: false
     property var dragPosition: null
     readonly property var position: dragPosition || model.pet.desktop_position || null
@@ -27,6 +45,15 @@ Item {
     Connections {
         target: root.model
         function onPetChanged() {
+            root.syncCracks()
+            let bonk = root.model.pet.last_bonk_at || 0
+            if (bonk !== root.seenBonk) {
+                root.seenBonk = bonk
+                if (Date.now() / 1000 - bonk < 3) {
+                    root.bonking = true; bonkTimer.restart()
+                    root.velocityX *= -1; root.velocityY *= -1
+                }
+            }
             let saved = root.model.pet.desktop_position, pending = root.dragPosition
             if (!root.dragging && saved && pending && saved.x === pending.x && saved.y === pending.y && saved.screen === pending.screen)
                 root.dragPosition = null
@@ -39,7 +66,28 @@ Item {
     property double lastTick: 0
     property double nextEscape: Date.now() + 15 * 60 * 1000
     function release() { model.desktop("roam", "on") }
-    function home() { model.desktop("roam", "off"); nextEscape = Date.now() + 15 * 60 * 1000 }
+    function home() {
+        if (crackCount > 0) {
+            model.notify("Repair all " + crackCount + " cracks first. Click each crack to fix it.")
+            return
+        }
+        model.desktop("roam", "off"); nextEscape = Date.now() + 15 * 60 * 1000
+    }
+    Timer { id: bonkTimer; interval: 700; onTriggered: root.bonking = false }
+    Timer {
+        interval: 12000; running: root.roaming && root.model.pet.overlay === true; repeat: true
+        onTriggered: if (Math.random() < 0.35) root.tryBonk()
+    }
+    Variants {
+        model: root.crackItems
+        delegate: Component {
+            ScreenCrack {
+                required property var modelData
+                crack: modelData
+                petModel: root.model
+            }
+        }
+    }
     onRoamingChanged: {
         if (roaming) {
             roamX = habitat.margins.left
@@ -50,15 +98,17 @@ Item {
         }
     }
     Timer {
-        interval: 32; running: root.roaming && root.model.pet.overlay === true; repeat: true
+        interval: 32; running: root.roaming && root.model.pet.overlay === true && root.model.pet.can_roam === true && !root.bonking; repeat: true
         onTriggered: {
             let now = Date.now(), dt = Math.min(0.08, Math.max(0, now - root.lastTick) / 1000)
             root.lastTick = now
             let maxX = Math.max(0, habitat.screen.width - habitat.width - 8)
             let maxY = Math.max(0, habitat.screen.height - habitat.height - 48)
             let nx = root.roamX + root.velocityX * dt, ny = root.roamY + root.velocityY * dt
+            let hitEdge = nx < 8 || nx > maxX || ny < 8 || ny > maxY
             if (nx < 8 || nx > maxX) root.velocityX *= -1
             if (ny < 8 || ny > maxY) root.velocityY *= -1
+            if (hitEdge && Math.random() < 0.2) root.tryBonk()
             root.roamX = Math.max(8, Math.min(maxX, nx))
             root.roamY = Math.max(8, Math.min(maxY, ny))
         }
@@ -204,13 +254,14 @@ Item {
             PetSprite {
                 id: runner
                 anchors.horizontalCenter: parent.horizontalCenter
-                mood: root.model.pet.status; character: root.model.pet.character || "cat"; effect: "run"
+                mood: root.model.pet.status; character: root.model.pet.character || "cat"
+                effect: root.bonking ? "bonk" : root.model.pet.can_roam ? "run" : ""
                 transform: Scale { origin.x: runner.width / 2; xScale: root.velocityX > 0 ? -1 : 1 }
             }
             Rectangle {
                 anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter }
                 width: Math.min(parent.width, returnLabel.implicitWidth + 14); height: 22; radius: 8; color: "#ed17252e"
-                Text { id: returnLabel; anchors.centerIn: parent; text: "Click to go home"; color: "#d8f3e3"; font.pixelSize: 10 }
+                Text { id: returnLabel; anchors.centerIn: parent; text: root.bonking ? "Bonk!" : root.crackCount > 0 ? "⚒ " + root.crackCount + " to fix first" : "Click to go home"; color: root.crackCount > 0 ? "#e9b47f" : "#d8f3e3"; font.pixelSize: 10 }
             }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.home() }
         }

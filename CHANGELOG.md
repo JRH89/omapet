@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Roaming pets occasionally bonk the screen and leave animated, repairable cracks.
+  Repair every crack before bringing them home; keyboard repair is also available.
+
 - Larger ASCII portraits for all twelve pets, character-matched terminal colors, blinking,
   sleep expressions, and clearer picker thumbnails.
 - Add a rubber duck character, available with the picker’s **d** key or `omapet character duck`.

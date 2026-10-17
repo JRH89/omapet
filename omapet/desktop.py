@@ -1,6 +1,8 @@
 """Persistent desktop preferences and safe playtime transitions."""
 import time
 import math
+import secrets
+import uuid
 
 
 def roam_block_reason(s):
@@ -34,6 +36,10 @@ def configure(s, setting, value):
         enabled = not s.get(key, key == 'escapes') if value == 'toggle' else value == 'on'
         if key == 'roaming' and enabled and not can_roam(s):
             raise ValueError(roam_block_reason(s))
+        if key == 'roaming' and not enabled and s.get('cracks'):
+            raise ValueError(f"Repair all {len(s['cracks'])} screen cracks before bringing your pet home.")
+        if key == 'roaming' and enabled and not s.get('roaming'):
+            s['repairing_cracks'] = False
         s[key] = enabled
         if key == 'roaming':
             s['escape_at'] = time.time()
@@ -48,3 +54,42 @@ def position(s, x, y, screen=''):
     if not isinstance(screen, str) or not screen.isprintable() and screen:
         raise ValueError('Invalid screen name')
     s['desktop_position'] = {'x': round(x), 'y': round(y), 'screen': screen[:128]}
+
+
+MAX_CRACKS = 4
+BONK_COOLDOWN = 15
+
+
+def bonk(s, x, y, screen='', now=None):
+    now = time.time() if now is None else now
+    x, y = float(x), float(y)
+    if not all(math.isfinite(v) and 0 <= v <= 100000 for v in (x, y)):
+        raise ValueError('Invalid impact coordinates')
+    if not isinstance(screen, str) or len(screen) > 128 or (screen and not screen.isprintable()):
+        raise ValueError('Invalid screen name')
+    if not s.get('roaming') or not s.get('overlay') or not can_roam(s):
+        raise ValueError('Only a visible, healthy roaming pet can bonk the screen')
+    cracks = s.setdefault('cracks', [])
+    if s.get('repairing_cracks'):
+        raise ValueError('Repair time: no more bonks until the next outing')
+    if len(cracks) >= MAX_CRACKS:
+        raise ValueError('Repair the existing cracks first')
+    if now - s.get('last_bonk_at', 0) < BONK_COOLDOWN:
+        raise ValueError('Your pet is recovering from its last bonk')
+    crack = dict(id=uuid.uuid4().hex, x=round(x), y=round(y), screen=screen,
+                 seed=secrets.randbits(31))
+    cracks.append(crack)
+    s['last_bonk_at'] = now
+    s['message'] = f"Bonk! Click the cracks to repair them ({len(cracks)} left)."
+    return crack
+
+
+def repair(s, crack_id):
+    cracks = s.get('cracks', [])
+    remaining = [] if crack_id == 'all' else [c for c in cracks if c['id'] != crack_id]
+    if len(remaining) == len(cracks):
+        raise ValueError('That crack is already repaired')
+    s['cracks'] = remaining
+    s['repairing_cracks'] = True
+    s['message'] = (f"Fixed! {len(remaining)} crack(s) left." if remaining
+                    else 'All patched up! Click your pet to bring it home.')
