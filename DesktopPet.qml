@@ -19,13 +19,13 @@ Item {
         if (JSON.stringify(incoming) !== JSON.stringify(crackItems))
             crackItems = incoming.map(c => crackItems.find(old => old.id === c.id) || c)
     }
-    function tryBonk() {
+    function tryBonk(kind = "crack") {
         let p = model.pet, now = Date.now()
         if (!roaming || !p.overlay || !p.can_roam || p.repairing_cracks || crackCount >= 4 || now < nextBonk) return
         if (now / 1000 - (p.last_bonk_at || 0) < 15) return
         nextBonk = now + 15000
         model.run(["bonk", String(Math.round(roamX + 72 + (velocityX < 0 ? -25 : 25))),
-                   String(Math.round(roamY + 52)), "--screen", habitat.screen.name])
+                   String(Math.round(roamY + 52)), "--screen", habitat.screen.name, "--kind", kind])
     }
     property bool dragging: false
     property var dragPosition: null
@@ -50,7 +50,7 @@ Item {
             if (bonk !== root.seenBonk) {
                 root.seenBonk = bonk
                 if (Date.now() / 1000 - bonk < 3) {
-                    root.bonking = true; bonkTimer.restart()
+                    if ((root.model.pet.cracks || []).slice(-1).some(c => c.kind !== "poop")) { root.bonking = true; bonkTimer.restart() }
                     root.velocityX *= -1; root.velocityY *= -1
                 }
             }
@@ -68,10 +68,15 @@ Item {
     function release() { model.desktop("roam", "on") }
     function home() {
         if (crackCount > 0) {
-            model.notify("Repair all " + crackCount + " cracks first. Click each crack to fix it.")
+            model.notify("Repair all " + crackCount + " cracks or messes first. Click each one to clean up.")
             return
         }
         model.desktop("roam", "off"); nextEscape = Date.now() + 15 * 60 * 1000
+    }
+    Timer { id: firstBonk; interval: 8000; onTriggered: root.tryBonk() }
+    Timer {
+        interval: 25000; running: root.roaming && root.model.pet.overlay === true; repeat: true
+        onTriggered: if (Math.random() < 0.4) root.tryBonk("poop")
     }
     Timer { id: bonkTimer; interval: 700; onTriggered: root.bonking = false }
     Timer {
@@ -94,6 +99,7 @@ Item {
             roamY = habitat.margins.top
             velocityX = -88; velocityY = -36
             lastTick = Date.now()
+            firstBonk.restart()
             model.notify("Freedom! Click me to bring me home.")
         }
     }
@@ -230,6 +236,12 @@ Item {
                     visible: root.detailed; width: parent.width; height: 23
                     text: "Surprise escapes: " + (root.model.pet.escapes === false ? "off" : "on")
                     onClicked: root.model.desktop("escapes", root.model.pet.escapes === false ? "on" : "off")
+                }
+                PetButton {
+                    visible: root.detailed; width: parent.width; height: 23
+                    text: "Preview pet screensaver"
+                    hint: "Cosmetic preview · press any key or move the mouse to exit"
+                    onClicked: Quickshell.execDetached(["python3", root.model.executable, "screensaver", "preview"])
                 }
                 Row {
                     visible: !root.detailed

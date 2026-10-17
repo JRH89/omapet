@@ -3,6 +3,8 @@ import QtQuick
 Item {
     id: root
     property int seed: 1
+    property string messKind: "crack"
+    onMessKindChanged: glass.requestPaint()
     property bool fixing: false
     signal repaired()
     implicitWidth: 160
@@ -17,6 +19,17 @@ Item {
         Behavior on scale { NumberAnimation { duration: 260 } }
         onPaint: {
             let c = getContext("2d"); c.reset()
+            if (root.messKind === "poop") {
+                // Deliberately chunky pixels to match the companion artwork.
+                let px = width / 2 - 28, py = height / 2 - 20
+                let rows = ["00011000", "00111100", "01111100", "01111110", "11111111", "11111111"]
+                for (let y=0; y<rows.length; y++) for (let x=0; x<8; x++) if (rows[y][x] === "1") {
+                    c.fillStyle = y < 2 ? "#b77a45" : y < 4 ? "#8f5935" : "#69412c"
+                    c.fillRect(px+x*7,py+y*7,7,7)
+                }
+                c.fillStyle="#f6e7cd"; c.fillRect(px+17,py+22,5,5); c.fillRect(px+38,py+22,5,5)
+                return
+            }
             let state = root.seed % 233280
             function random() { state = (state * 9301 + 49297) % 233280; return state / 233280 }
             let cx = width / 2, cy = height / 2, rays = []
@@ -52,7 +65,7 @@ Item {
         width: 90; height: 23; radius: 8
         color: root.fixing ? "#d9457162" : "#ed17252e"
         border.color: "#779bd9b7"
-        Text { anchors.centerIn: parent; text: root.fixing ? "✓ Fixed!" : "⚒ Repair"; color: "#d8f3e3"; font.pixelSize: 11 }
+        Text { anchors.centerIn: parent; text: root.fixing ? "✓ Done!" : root.messKind === "poop" ? "✦ Clean up" : "⚒ Repair"; color: "#d8f3e3"; font.pixelSize: 11 }
     }
     MouseArea {
         anchors.fill: parent

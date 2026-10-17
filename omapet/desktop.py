@@ -37,7 +37,7 @@ def configure(s, setting, value):
         if key == 'roaming' and enabled and not can_roam(s):
             raise ValueError(roam_block_reason(s))
         if key == 'roaming' and not enabled and s.get('cracks'):
-            raise ValueError(f"Repair all {len(s['cracks'])} screen cracks before bringing your pet home.")
+            raise ValueError(f"Repair all {len(s['cracks'])} cracks or messes before bringing your pet home.")
         if key == 'roaming' and enabled and not s.get('roaming'):
             s['repairing_cracks'] = False
         s[key] = enabled
@@ -60,7 +60,8 @@ MAX_CRACKS = 4
 BONK_COOLDOWN = 15
 
 
-def bonk(s, x, y, screen='', now=None):
+def bonk(s, x, y, screen='', now=None, kind='crack'):
+    if kind not in ('crack', 'poop'): raise ValueError('Unknown desktop mess')
     now = time.time() if now is None else now
     x, y = float(x), float(y)
     if not all(math.isfinite(v) and 0 <= v <= 100000 for v in (x, y)):
@@ -76,11 +77,11 @@ def bonk(s, x, y, screen='', now=None):
         raise ValueError('Repair the existing cracks first')
     if now - s.get('last_bonk_at', 0) < BONK_COOLDOWN:
         raise ValueError('Your pet is recovering from its last bonk')
-    crack = dict(id=uuid.uuid4().hex, x=round(x), y=round(y), screen=screen,
+    crack = dict(id=uuid.uuid4().hex, x=round(x), y=round(y), screen=screen, kind=kind,
                  seed=secrets.randbits(31))
     cracks.append(crack)
     s['last_bonk_at'] = now
-    s['message'] = f"Bonk! Click the cracks to repair them ({len(cracks)} left)."
+    s['message'] = f"{'Oops! Clean up the poop.' if kind == 'poop' else 'Bonk! Repair the crack.'} {len(cracks)} mess(es) left."
     return crack
 
 
@@ -91,5 +92,5 @@ def repair(s, crack_id):
         raise ValueError('That crack is already repaired')
     s['cracks'] = remaining
     s['repairing_cracks'] = True
-    s['message'] = (f"Fixed! {len(remaining)} crack(s) left." if remaining
+    s['message'] = (f"Fixed! {len(remaining)} mess(es) left." if remaining
                     else 'All patched up! Click your pet to bring it home.')

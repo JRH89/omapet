@@ -28,8 +28,10 @@ Roaming does not overwrite the habitat's saved position.
 Hover over a blocked Let out button to see exactly what your pet needs first.
 He runs around the current screen, bouncing away from its edges. Click him to bring
 him home once any screen cracks are repaired. Occasionally he bonks the screen,
-pauses briefly, and leaves a pretend glass crack. Click each crack's **Repair** badge
-to patch it with an animation. Up to four cracks can appear; once you start repairing,
+pauses briefly, and leaves a pretend glass crack. Manual outings and surprise
+escapes both include bonks, with an early bonk after release. He may also leave
+pixel poop: click its **Clean up** badge before bringing him home. Click each crack's **Repair** badge
+to patch it with an animation. Up to four cracks or poop piles can appear; once you start repairing,
 he stops making new ones until his next outing. He keeps running between bonks.
 Only the small pet and crack windows accept input; there is no full-screen mouse
 interception. Playtime doesn't damage your pet or spend XP. Press **x** in the TUI
@@ -129,3 +131,32 @@ cp integrations/omapet-sync.{service,timer} ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now omapet-sync.timer
 ```
+
+## Pet screensaver
+
+The optional screensaver shows your selected pixel companion running and turning
+around on a dark fullscreen background, on each connected monitor. Move the mouse,
+click, or press a key to dismiss it. Use **Preview pet screensaver** in the detailed
+habitat, or run:
+
+```sh
+omapet screensaver preview       # try it now, without changing idle settings
+omapet screensaver enable        # use it when Omarchy starts the screensaver
+omapet screensaver disable       # restore Omarchy's default idle service
+```
+
+The terminal command must be installed for automatic screensaver integration;
+see the README's optional terminal command instructions. Enabling creates a user
+clone of Omarchy's idle service and changes only its screensaver launch command.
+Existing idle customizations are preserved: automatic setup refuses to overwrite
+an existing idle clone. For a custom clone, replace `omarchy-launch-screensaver`
+in its screensaver launch command with `omapet screensaver run` yourself.
+
+The preview reads only the saved name and character. It never writes pet state,
+spends energy, grants XP, or creates poop or cracks. Ordinary pet care timers keep
+passing as usual; this animation does not count as exercise or sleep. Use Vacation
+mode separately if you want to pause care while away.
+
+Omarchy's idle timeout, Stay Awake setting, screensaver-off toggle, and lock timer
+remain in effect. Preview works even when automatic screensavers are disabled.
+Locking closes the animation through Omarchy's normal screensaver cleanup.

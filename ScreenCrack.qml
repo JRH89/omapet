@@ -20,6 +20,7 @@ PanelWindow {
     CrackEffect {
         anchors.fill: parent
         seed: root.crack.seed
+        messKind: root.crack.kind || "crack"
         onRepaired: root.petModel.run(["repair", root.crack.id])
     }
 }

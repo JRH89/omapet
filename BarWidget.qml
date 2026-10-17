@@ -16,10 +16,12 @@ Ui.BarWidget {
         id: button
         anchors.fill: parent
         bar: root.bar
-        text: model.pet.name + " L" + model.pet.level
+        text: model.pet.status || "loading"
         labelVisible: false
         fixedWidth: root.vertical ? root.barSize : content.implicitWidth + scaledHorizontalMargin * 2
-        tooltipText: (model.pet.character === "duck" ? "Rubber duck" : model.pet.character || "Pet") + " · " + model.pet.status
+        tooltipText: model.pet.name + " · Level " + model.pet.level + " · " + model.pet.status
+            + "\nFood " + Math.round(model.pet.food || 0) + "% · Energy " + Math.round(model.pet.energy || 0)
+            + "% · Clean " + Math.round(model.pet.hygiene || 0) + "%"
             + "\nLeft-click: care · Right-click: show / hide pet"
         onPressed: function(buttonCode) { if (buttonCode === Qt.RightButton) model.run(["overlay", "toggle"]); else if (buttonCode === Qt.LeftButton) root.open() }
         Row {

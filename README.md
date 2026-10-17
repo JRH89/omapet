@@ -41,6 +41,7 @@ installer, background service, or global `omapet` command is needed.
 - Press **n** in the TUI to name your pet, or **b** to choose its character.
 - In the habitat, hover over an icon to see its label. **≡** opens detailed view.
 - Drag the pet, header, or empty habitat space to move its home. Its position is saved.
+- Preview a cosmetic pet screensaver from Detailed view. [Enable it for idle time](docs/GUIDE.md#pet-screensaver).
 
 The repository is the source for installation. A marketplace listing is a separate
 submission; see [publishing status and instructions](PUBLISHING.md).

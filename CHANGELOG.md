@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Add an optional fullscreen pixel-pet screensaver with direction changes, multi-monitor
+  support, a habitat preview button, and reversible Omarchy idle integration.
+  The screensaver only reads appearance and never modifies the pet.
+
+- Add occasional pixel poop during outings, with click-to-clean animations and a home gate.
+- Include an early screen bonk on manual outings as well as random escapes.
+- Simplify the bar to pet icon and status; move name, level, and care stats to hover.
+
 - Roaming pets occasionally bonk the screen and leave animated, repairable cracks.
   Repair every crack before bringing them home; keyboard repair is also available.
 

@@ -10,6 +10,8 @@ def main():
     p = argparse.ArgumentParser(description='Omapet · a GitHub-grown desktop companion')
     sub = p.add_subparsers(dest='command')
     sub.add_parser('tui', help='Open the care dashboard')
+    saver = sub.add_parser('screensaver', help='Cosmetic pet screensaver')
+    saver.add_argument('action', choices=['preview', 'run', 'enable', 'disable', 'snapshot'], default='preview', nargs='?')
     st = sub.add_parser('status'); st.add_argument('--json', action='store_true')
     sub.add_parser('waybar', help='Print a Waybar JSON update')
     act = sub.add_parser('care'); act.add_argument('action', choices=ACTIONS)
@@ -24,6 +26,7 @@ def main():
     pos = sub.add_parser('position', help='Save the desktop habitat position')
     pos.add_argument('x', type=float); pos.add_argument('y', type=float); pos.add_argument('--screen', default='')
     hit = sub.add_parser('bonk', help='Record an on-screen roaming impact')
+    hit.add_argument('--kind', choices=['crack', 'poop'], default='crack')
     hit.add_argument('x', type=float); hit.add_argument('y', type=float); hit.add_argument('--screen', default='')
     fix = sub.add_parser('repair', help='Repair one screen crack, or all for keyboard access')
     fix.add_argument('crack_id')
@@ -36,6 +39,12 @@ def main():
         if args.command in (None, 'tui'):
             from .tui import run
             run(); return
+        if args.command == 'screensaver':
+            from . import screensaver
+            if args.action == 'snapshot': print(json.dumps(screensaver.snapshot()))
+            elif args.action in ('enable', 'disable'): print(screensaver.configure(args.action == 'enable'))
+            else: screensaver.run(preview=args.action == 'preview')
+            return
         if args.command == 'sync':
             from .github import collect
             account, days = collect()
@@ -60,7 +69,7 @@ def main():
                 position(s, args.x, args.y, args.screen)
             elif args.command == 'bonk':
                 from .desktop import bonk
-                bonk(s, args.x, args.y, args.screen)
+                bonk(s, args.x, args.y, args.screen, kind=args.kind)
             elif args.command == 'repair':
                 from .desktop import repair
                 repair(s, args.crack_id)

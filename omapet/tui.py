@@ -117,7 +117,7 @@ def dashboard(screen, worker):
             put(15, left + 1, '   '.join(f'{label} {v:2}' for label, v in zip(trait_labels, s['traits'].values())), 4)
             put(16, left + 1, f"GitHub: {s['account'] or 'not connected'} · Last active: {s.get('last_active', '—')}", 0)
             if s.get('cracks'):
-                put(17, left + 1, f"[x] Repair a crack · {len(s['cracks'])} left before your pet can go home", 3)
+                put(17, left + 1, f"[x] Clean up a mess · {len(s['cracks'])} left before your pet can go home", 3)
             put(18, left + 1, '[f] Feed   [c] Clean   [s] Sleep/wake   [p] Play   [m] Medicine', 2)
             put(19, left + 1, '[n] Name   [b] Character   [o] Show/hide pet   [v] Vacation', 2)
             if h >= 27:
@@ -175,7 +175,7 @@ def dashboard(screen, worker):
                 elif key == ord('x'):
                     from .desktop import repair
                     with store() as state:
-                        if not state.get('cracks'): raise ValueError('No screen cracks to repair')
+                        if not state.get('cracks'): raise ValueError('No desktop messes to clean')
                         repair(state, state['cracks'][0]['id'])
                     message = state['message']
                 elif key == ord('n'): modal, name_input = 'name', s['name']

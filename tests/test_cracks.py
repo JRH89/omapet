@@ -83,3 +83,21 @@ class CrackTests(unittest.TestCase):
         self.assertEqual(s['cracks'], [crack])
         with self.assertRaisesRegex(ValueError, 'already repaired'): repair(s, 'unknown')
         self.assertEqual(s['cracks'], [crack])
+
+    def test_manual_outing_requires_cleaning_both_kinds(self):
+        s = fresh(); s['overlay'] = True
+        configure(s, 'roam', 'on')
+        crack = bonk(s, 100, 100, now=100)
+        poop = bonk(s, 200, 200, now=120, kind='poop')
+        self.assertEqual(poop['kind'], 'poop')
+        repair(s, crack['id'])
+        with self.assertRaises(ValueError): configure(s, 'roam', 'off')
+        with self.assertRaises(ValueError): bonk(s, 300, 300, now=140, kind='poop')
+        repair(s, poop['id'])
+        configure(s, 'roam', 'off')
+        self.assertFalse(s['roaming'])
+
+    def test_unknown_mess_kind_is_rejected(self):
+        s = self.pet()
+        with self.assertRaises(ValueError): bonk(s, 100, 100, kind='unknown')
+        self.assertFalse(s['cracks'])
