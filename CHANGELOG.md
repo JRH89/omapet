@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Larger ASCII portraits for all twelve pets, character-matched terminal colors, blinking,
+  sleep expressions, and clearer picker thumbnails.
+- Add a rubber duck character, available with the picker’s **d** key or `omapet character duck`.
+- Redraw all twelve companions with expressive faces and distinct silhouettes.
+- Render sprites on a small pixel grid with unfiltered scaling, including care animations.
+
+- Show a miniature version of the selected pet beside its name and level in the bar.
+- Explain blocked playtime actions on hover, including low energy, hunger, and sickness.
+
 ## 0.1.0 — Initial preview
 
 - Native Omarchy Quattro bar widget and draggable desktop habitat with saved position.

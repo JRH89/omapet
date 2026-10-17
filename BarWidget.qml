@@ -16,9 +16,32 @@ Ui.BarWidget {
         id: button
         anchors.fill: parent
         bar: root.bar
-        text: "♟ " + model.pet.name + " L" + model.pet.level
-        tooltipText: model.pet.status + " · Food " + Math.round(model.pet.food) + " · Click to care"
+        text: model.pet.name + " L" + model.pet.level
+        labelVisible: false
+        fixedWidth: root.vertical ? root.barSize : content.implicitWidth + scaledHorizontalMargin * 2
+        tooltipText: (model.pet.character === "duck" ? "Rubber duck" : model.pet.character || "Pet") + " · " + model.pet.status
+            + "\nLeft-click: care · Right-click: show / hide pet"
         onPressed: function(buttonCode) { if (buttonCode === Qt.RightButton) model.run(["overlay", "toggle"]); else if (buttonCode === Qt.LeftButton) root.open() }
+        Row {
+            id: content
+            anchors.centerIn: parent
+            spacing: 4
+            PetSprite {
+                width: 24; height: 24
+                anchors.verticalCenter: parent.verticalCenter
+                character: model.pet.character || "cat"
+                mood: model.pet.status
+                animated: false
+            }
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: button.text
+                color: button.foreground
+                font.family: button.fontFamily
+                font.pixelSize: button.fontSize
+                renderType: Text.NativeRendering
+            }
+        }
     }
     DesktopPet { model: model }
 }

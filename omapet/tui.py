@@ -3,6 +3,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from .core import store, public, care, apply_days
 from .characters import CHARACTERS, CHARACTER_KEYS, choose, rename
+from .portraits import portrait, thumbnail, terminal_color
 
 
 def run():
@@ -17,6 +18,11 @@ def dashboard(screen, worker):
     curses.use_default_colors()
     for idx, color in enumerate((curses.COLOR_CYAN, curses.COLOR_GREEN, curses.COLOR_YELLOW, curses.COLOR_MAGENTA), 1):
         curses.init_pair(idx, color, -1)
+    pet_colors = {}
+    for idx, (kind, (_, color, _)) in enumerate(CHARACTERS.items(), 5):
+        if idx < curses.COLOR_PAIRS:
+            curses.init_pair(idx, terminal_color(color, curses.COLORS), -1)
+            pet_colors[kind] = idx
     message = 'Welcome home. A little care, a little code.'
     future, arena, result, next_poll = None, False, None, 0
     modal, name_input = None, ''
@@ -79,19 +85,23 @@ def dashboard(screen, worker):
                 put(10, left + 3, 'Connect with: omapet arena connect URL', 3)
         else:
             split = min(34, width // 2)
-            box(4, left, 10, split, 'YOUR COMPANION')
+            frame = int(time.monotonic() * 5)
+            action = s.get('last_action') if time.time() - s.get('action_at', 0) < 2.4 else ''
+            title = ('NOM NOM' if frame % 2 else 'SNACK TIME') if action == 'feed' else 'YOUR COMPANION'
+            box(4, left, 10, split, title)
             box(4, left + split + 1, 10, width - split - 1, 'CARE')
             character = s['character']
-            art = list(CHARACTERS[character][2])
-            frame = int(time.time() * 5)
-            action = s.get('last_action') if time.time() - s.get('action_at', 0) < 2.4 else ''
+            mood = 'eating' if action == 'feed' and not s['sleeping'] else s['status']
+            art = portrait(character, mood, frame)
+            art_width = max(map(len, art))
+            art_x = left + (split - art_width) // 2
             for i, line in enumerate(art):
-                if s['sleeping']: line = line.replace('o', '-').replace('O', '-')
-                if s['sick']: line = line.replace('o', 'x')
-                put(6 + i, left + split // 2 - 4, line, 4, True)
-            if action == 'feed': put(11, left + split // 2 - 6, '· nom nom ·' if frame % 2 else '  (snack)  ', 3)
-            elif action == 'clean': put(6 + frame % 4, left + 4, '✧', 1); put(7 + frame % 3, left + split - 5, '✦', 1)
-            elif s['sleeping']: put(6, left + split - 7, 'z Z', 1)
+                put(5 + i, art_x, line, pet_colors.get(character, 4), True)
+            if action == 'clean':
+                put(6 + frame % 4, left + 2, '*', 1)
+                put(7 + frame % 3, left + split - 3, '*', 1)
+            elif s['sleeping']:
+                put(5 + frame % 2, left + split - 5, 'zZ', 1)
             put(12, left + 3, f"{s['name']} · {character}"[:split - 5], 2, True)
             sx = left + split + 4
             bars = max(5, min(20, width - split - 23))
@@ -118,13 +128,14 @@ def dashboard(screen, worker):
             mw, mh = min(w - 4, 78), 17 if modal == 'character' else 8
             mx, my = (w - mw) // 2, max(0, (h - mh) // 2)
             for row in range(mh): put(my + row, mx, ' ' * mw)
-            box(my, mx, mh, mw, 'CHOOSE YOUR COMPANION' if modal == 'character' else 'A NAME OF THEIR OWN')
+            box(my, mx, mh, mw, f'CHOOSE YOUR COMPANION · {len(CHARACTERS)}' if modal == 'character' else 'A NAME OF THEIR OWN')
             if modal == 'character':
                 for i, (kind, (suggested, _, art)) in enumerate(CHARACTERS.items()):
                     col, row = i % 3, i // 3
                     x, y = mx + 3 + col * ((mw - 4) // 3), my + 2 + row * 3
-                    put(y, x, f'[{CHARACTER_KEYS[i]}] {kind.title()}' + (' ✓' if kind == s['character'] else ''), 2, True)
-                    put(y + 1, x, (art[1] + ' ' + suggested)[:(mw - 4) // 3 - 2], 4)
+                    label = 'Rubber duck' if kind == 'duck' else kind.title()
+                    put(y, x, f'[{CHARACTER_KEYS[i]}] {label}' + (' ✓' if kind == s['character'] else ''), 2, True)
+                    put(y + 1, x, thumbnail(kind)[:(mw - 4) // 3 - 2], pet_colors.get(kind, 4), True)
                 put(my + 15, mx + 3, '[0] Surprise me   [Esc] Back', 1)
             else:
                 put(my + 2, mx + 3, 'What should we call your companion?', 0)

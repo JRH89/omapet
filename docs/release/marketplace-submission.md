@@ -16,7 +16,7 @@ https://github.com/omacom/omarchy-plugin-marketplace/issues/new?template=submit-
 **Maintainer notes:**
 
 Omapet is a virtual pet for Omarchy Quattro with a bar widget, compact/detailed
-on-screen habitat, and terminal care dashboard. Eleven characters grow through
+on-screen habitat, and terminal care dashboard. Twelve characters grow through
 capped GitHub contribution XP. Users feed, clean, rest, rename, and care for the
 pet manually. The habitat can be dragged with persistent positioning; playtime
 allows desktop roaming and optional surprise escapes. A Waybar adapter and casual

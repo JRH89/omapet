@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from omapet.core import fresh, store, public
-from omapet.desktop import can_roam, configure, position
+from omapet.desktop import can_roam, configure, position, roam_block_reason
 
 
 class DesktopTests(unittest.TestCase):
@@ -18,6 +18,19 @@ class DesktopTests(unittest.TestCase):
         configure(s, 'escapes', 'toggle')
         self.assertTrue(s['escapes'])
         with self.assertRaises(ValueError): configure(s, 'view', 'on')
+
+    def test_roam_hint_explains_every_blocker(self):
+        s = fresh()
+        self.assertEqual(roam_block_reason(s), '')
+        s.update(energy=12.9, food=5, sick=True, sleeping=True, vacation=True)
+        reason = roam_block_reason(s)
+        for text in ['Low energy (12/100)', 'Hungry (5/100)', 'sleeping', 'sick', 'vacation']:
+            self.assertIn(text, reason)
+        self.assertEqual(public(s)['roam_block_reason'], reason)
+        with self.assertRaisesRegex(ValueError, 'Low energy'):
+            configure(s, 'roam', 'on')
+        s['dead'] = True
+        self.assertIn('Revive', roam_block_reason(s))
 
     def test_saved_position_and_invalid_coordinates(self):
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, OMAPET_HOME=tmp):

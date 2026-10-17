@@ -6,6 +6,7 @@ import Quickshell.Wayland
 Item {
     id: root
     required property var model
+    readonly property string roamHint: model.pet.can_roam === true ? "Let out · click your pet outside to bring it home" : (model.pet.roam_block_reason || "Checking whether your pet is ready…")
     readonly property bool detailed: model.pet.desktop_view === "detailed"
     readonly property bool roaming: model.pet.roaming === true && model.pet.can_roam === true
     property bool dragging: false
@@ -173,7 +174,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter; spacing: 6
                     visible: root.detailed
                     PetButton { width: 111; text: root.detailed ? "Simple view" : "Detailed view"; onClicked: root.model.desktop("view", "toggle") }
-                    PetButton { width: 111; text: "Let out ↗"; enabled: root.model.pet.can_roam === true; onClicked: root.release() }
+                    PetButton { width: 111; text: "Let out ↗"; hint: root.roamHint; available: root.model.pet.can_roam === true; onClicked: root.release() }
                 }
                 PetButton {
                     visible: root.detailed; width: parent.width; height: 23
@@ -187,7 +188,7 @@ Item {
                     PetButton { width: 28; text: "✧"; hint: "Clean"; textSize: 17; onClicked: root.model.act("clean") }
                     PetButton { width: 28; text: root.model.pet.sleeping ? "☀" : "☾"; hint: root.model.pet.sleeping ? "Wake" : "Sleep"; textSize: 16; onClicked: root.model.act(root.model.pet.sleeping ? "wake" : "sleep") }
                     PetButton { width: 28; text: "≡"; hint: "Detailed view"; textSize: 19; onClicked: root.model.desktop("view", "detailed") }
-                    PetButton { width: 28; text: "↗"; hint: "Let out"; textSize: 17; enabled: root.model.pet.can_roam === true; onClicked: root.release() }
+                    PetButton { width: 28; text: "↗"; hint: root.roamHint; textSize: 17; available: root.model.pet.can_roam === true; onClicked: root.release() }
                     PetButton { width: 28; text: "×"; hint: "Hide"; textSize: 19; onClicked: root.model.hide() }
                 }
             }

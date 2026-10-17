@@ -6,3 +6,6 @@ build/
 dist/
 arena.json
 arena-invite.txt
+
+# Local project planning notes
+/PRIVATE-TODO.md

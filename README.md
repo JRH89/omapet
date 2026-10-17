@@ -3,7 +3,7 @@
 A desktop companion for **Omarchy Quattro**. Care for a tiny pet, help it grow
 through GitHub contributions, and let it wander around your desktop.
 
-Choose from eleven characters, name your companion, and keep it close in a compact
+Choose from twelve characters, name your companion, and keep it close in a compact
 widget or terminal dashboard. GitHub activity earns experience; food, cleaning,
 sleep, and play are up to you. Vacation mode pauses care when you need a break.
 
@@ -72,12 +72,14 @@ without this optional step.
 
 | Feature | How it works |
 | --- | --- |
-| Eleven companions | Cat, fox, bunny, frog, bear, owl, slime, robot, penguin, snake, or gopher. Randomly assigned or chosen in the TUI. |
+| Twelve companions | Cat, fox, bunny, frog, bear, owl, slime, robot, penguin, snake, gopher, or rubber duck. Randomly assigned or chosen in the TUI. |
 | Everyday care | Feed, clean, play, rest, and treat sickness. Animated snacks and bubbles confirm actions. |
 | Compact or detailed | One row of icon buttons, or care meters, combat traits, XP, and GitHub activity. |
 | Desktop adventures | Let your pet out and click it to bring it home. Optional surprise escapes happen while it is awake and healthy. |
 | Time off | Vacation freezes care needs. Gentle mode prevents death; hardcore mode is opt-in. |
 | Friendly battles | Connect to a private TUI arena for turn-based sparring and capped XP rewards. |
+
+![All twelve Omapet characters in their pixel style](docs/screenshots/characters.png)
 
 GitHub contributions build different strengths:
 

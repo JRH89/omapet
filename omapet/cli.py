@@ -2,7 +2,7 @@ import argparse
 import getpass
 import json
 import sys
-from .characters import CHARACTERS, choose, rename
+from .characters import CHARACTERS, CHARACTER_ICONS, choose, rename
 from .core import ACTIONS, store, public, apply_days, care, status, level
 
 
@@ -61,7 +61,7 @@ def main():
             view = public(s)
         if args.command == 'position': return
         if args.command == 'waybar':
-            print(json.dumps({'text': f"♟ {s['name']} Lv.{level(s)}", 'class': status(s),
+            print(json.dumps({'text': f"{CHARACTER_ICONS.get(s['character'], '🐾')} {s['name']} Lv.{level(s)}", 'class': status(s),
                   'tooltip': f"{status(s).title()} · HP {s['health']:.0f} · Food {s['food']:.0f} · Energy {s['energy']:.0f}\nClick: care · Right click: desktop pet"}))
         elif args.command == 'status' and args.json: print(json.dumps(view))
         else: print(f"{s['name']} · Lv.{level(s)} · {status(s)}\n{s['message']}")

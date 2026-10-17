@@ -3,8 +3,25 @@ import time
 import math
 
 
+def roam_block_reason(s):
+    if s.get('dead'):
+        return 'Revive your pet before letting it out.'
+    reasons = []
+    if s.get('vacation'):
+        reasons.append('Leave vacation mode first.')
+    if s.get('sleeping'):
+        reasons.append('Your pet is sleeping. Wake it when it is rested.')
+    if s.get('sick'):
+        reasons.append('Your pet is sick. Feed, clean, and give it medicine.')
+    if s['energy'] < 20:
+        reasons.append(f"Low energy ({math.floor(s['energy'])}/100). Let your pet sleep until energy reaches 20.")
+    if s['food'] < 20:
+        reasons.append(f"Hungry ({math.floor(s['food'])}/100). Feed your pet until food reaches 20.")
+    return '\n'.join(reasons)
+
+
 def can_roam(s):
-    return not any(s.get(k, False) for k in ('sleeping', 'vacation', 'dead', 'sick')) and s['energy'] >= 20 and s['food'] >= 20
+    return not roam_block_reason(s)
 
 
 def configure(s, setting, value):
@@ -16,7 +33,7 @@ def configure(s, setting, value):
         key = 'roaming' if setting == 'roam' else 'escapes'
         enabled = not s.get(key, key == 'escapes') if value == 'toggle' else value == 'on'
         if key == 'roaming' and enabled and not can_roam(s):
-            raise ValueError('Your companion needs to be awake, healthy, fed, and rested to roam')
+            raise ValueError(roam_block_reason(s))
         s[key] = enabled
         if key == 'roaming':
             s['escape_at'] = time.time()

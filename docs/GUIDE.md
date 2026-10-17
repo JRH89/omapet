@@ -25,6 +25,7 @@ If the saved monitor is disconnected, the habitat falls back to an available one
 Roaming does not overwrite the habitat's saved position.
 
 **Let out ↗** releases an awake, healthy companion with at least 20 food and energy.
+Hover over a blocked Let out button to see exactly what your pet needs first.
 He runs around the current screen, bouncing away from its edges. Click him to bring
 him home. Only the small moving pet window accepts input; there is no full-screen
 mouse interception. Playtime is cosmetic and doesn't damage your pet or spend XP.
@@ -43,16 +44,16 @@ omapet desktop roam on           # off brings him home
 omapet desktop escapes off       # disable surprise escapes
 ```
 
-## Eleven companions, your choice
+## Twelve companions, your choice
 
-New pets are randomly assigned a cat, fox, bunny, frog, bear, owl, slime, robot, penguin, snake, or gopher.
+New pets are randomly assigned a cat, fox, bunny, frog, bear, owl, slime, robot, penguin, snake, gopher, or rubber duck.
 Existing pets receive a character once on migration; their name and progress are
 preserved. Each has its own desktop silhouette and terminal portrait.
-Press **b** in the TUI, choose **1–9**, **s** for snake, **g** for gopher, or **0** for a surprise. Press **n** to rename.
+Press **b** in the TUI, choose **1–9**, **s** for snake, **g** for gopher, **d** for duck, or **0** for a surprise. Press **n** to rename.
 Changing characters is cosmetic and keeps all stats and progress.
 
 ```sh
-omapet character fox      # or cat, bunny, frog, bear, owl, slime, robot, penguin, snake, gopher, random
+omapet character fox      # or cat, bunny, frog, bear, owl, slime, robot, penguin, snake, gopher, duck, random
 omapet name Fern
 ```
 

@@ -10,7 +10,7 @@ import tempfile
 import time
 import uuid
 from .characters import random_character
-from .desktop import can_roam
+from .desktop import can_roam, roam_block_reason
 
 KINDS = ('commits', 'prs', 'issues', 'reviews')
 CAPS = dict(zip(KINDS, (12, 3, 3, 5)))
@@ -153,7 +153,7 @@ def status(s):
 
 
 def public(s):
-    return {**s, 'level': level(s), 'traits': traits(s), 'status': status(s), 'can_roam': can_roam(s)}
+    return {**s, 'level': level(s), 'traits': traits(s), 'status': status(s), 'can_roam': can_roam(s), 'roam_block_reason': roam_block_reason(s)}
 
 
 def atomic_json(path, value):

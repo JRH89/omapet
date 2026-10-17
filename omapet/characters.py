@@ -2,7 +2,7 @@
 import secrets
 
 CHARACTERS = {
-    'cat': ('Mochi', '#9bd9b7', (r' /\_/\ ', '( o.o )', ' > ^ < ', '/|   |\\', '(_|_|_)')),
+    'cat': ('Mochi', '#e8c9ad', (r' /\_/\ ', '( o.o )', ' > ^ < ', '/|   |\\', '(_|_|_)')),
     'fox': ('Ember', '#efa76e', (r' /\ /\ ', '( ^.^ )', ' \\ v / ', ' /   \\~', '(_/ \\_)')),
     'bunny': ('Clover', '#d4b5e8', (' (\\ /) ', ' (o.o) ', ' / >o< ', '(     )', '(_/ \\_)')),
     'frog': ('Puddle', '#a6cf72', (' @   @ ', '( o_o )', ' /---\\ ', '(     )', '(_/ \\_)')),
@@ -13,10 +13,18 @@ CHARACTERS = {
     'penguin': ('Tux', '#526b85', ('  .--. ', ' (o  o)', ' / >  \\', '(  ()  )', r' \_/\_/ ')),
     'snake': ('Noodle', '#97ce79', ('   __  ', '  (o.o)', '  /  / ', ' / ~(_ ', '(_____)')),
     'gopher': ('Goober', '#ba936d', ('  .--. ', ' (o..o)', ' / \"\" \\', '(      )', '(_/ \\_)')),
+    'duck': ('Quackers', '#f5d461', ('   __  ', ' <(o ) ', r'  (  \___', '   (_____)', '    ~~~~ ')),
 }
 
 
-CHARACTER_KEYS = '123456789sg'
+CHARACTER_KEYS = '123456789sgd'
+
+# Text-only Waybar fallback; Quattro renders the actual pixel sprite.
+CHARACTER_ICONS = {
+    'cat': '🐈', 'fox': '🦊', 'bunny': '🐇', 'frog': '🐸',
+    'bear': '🐻', 'owl': '🦉', 'slime': '🫧', 'robot': '🤖',
+    'penguin': '🐧', 'snake': '🐍', 'gopher': '🐿', 'duck': '🦆',
+}
 
 def random_character():
     return secrets.choice(tuple(CHARACTERS))
