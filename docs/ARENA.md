@@ -50,4 +50,3 @@ verified**. Local saves and arena rewards can be edited. This is a friendly aren
 not an anti-cheat or ranked service. Server restarts retain players and matches;
 change the invitation to prevent new registrations, and remove a player's record
 from the stopped server's state to revoke its token.
-

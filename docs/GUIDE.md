@@ -122,4 +122,3 @@ cp integrations/omapet-sync.{service,timer} ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now omapet-sync.timer
 ```
-
