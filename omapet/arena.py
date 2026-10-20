@@ -188,13 +188,13 @@ def handler(arena, trust_cloudflare=False):
         server_version = 'OmapetArena'
         sys_version = ''
 
-        def respond(self, code, result, html=False):
+        def respond(self, code, result, html=False, content_type=None):
             payload = result.encode() if html else json.dumps(result).encode()
             try:
                 self.send_response(code)
-                self.send_header('Content-Type', 'text/html; charset=utf-8' if html else 'application/json')
+                self.send_header('Content-Type', content_type or ('text/html; charset=utf-8' if html else 'application/json'))
                 self.send_header('Referrer-Policy', 'no-referrer')
-                self.send_header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+                self.send_header('Content-Security-Policy', "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
                 self.send_header('Content-Length', str(len(payload)))
                 self.send_header('Cache-Control', 'no-store')
                 self.send_header('X-Content-Type-Options', 'nosniff')
@@ -217,6 +217,9 @@ def handler(arena, trust_cloudflare=False):
             if self.path in ('/', '/index.html'):
                 from .arena_page import PAGE
                 self.respond(200, PAGE, html=True)
+            elif self.path == '/favicon.svg':
+                from .arena_page import FAVICON
+                self.respond(200, FAVICON, html=True, content_type='image/svg+xml')
             elif self.path == '/healthz': self.respond(200, {'ok': True})
             else: self.respond(404, {'error': 'Not found'})
 

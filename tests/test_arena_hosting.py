@@ -46,8 +46,13 @@ class HostingTests(unittest.TestCase):
                     self.assertIn('text/html', res.headers['Content-Type'])
                     self.assertIn('frame-ancestors', res.headers['Content-Security-Policy'])
                     self.assertIn('Join the arena', page)
+                    self.assertIn('by Codefront Labs', page)
+                    self.assertIn('href="/favicon.svg"', page)
                     self.assertNotIn(arena.invite, page)
                     self.assertFalse(arena.data['players'])
+                with urlopen(base+'/favicon.svg') as res:
+                    self.assertEqual(res.headers['Content-Type'], 'image/svg+xml')
+                    self.assertIn(b'<svg', res.read())
                 for body in [b'null', b'[]', b'\xff', b'{']:
                     with self.assertRaises(HTTPError) as err:
                         urlopen(Request(base+'/status', data=body))
