@@ -10,12 +10,16 @@ def call(url, route, body=None, token=''):
     if parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username or parsed.password:
         raise ValueError('Arena URL must be http(s) without embedded credentials')
     req = Request(url.rstrip('/') + route, data=json.dumps(body or {}).encode(),
-                  headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token})
+                  headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token,
+                           'User-Agent': 'Omapet/0.1.0 (+https://github.com/JRH89/omapet)'})
     try:
         with urlopen(req, timeout=8) as res:
             return json.loads(res.read(65536))
     except HTTPError as e:
-        raise ValueError(json.loads(e.read(8192)).get('error', 'Arena request failed')) from None
+        try: message = json.loads(e.read(8192)).get('error', 'Arena request failed')
+        except (ValueError, AttributeError): message = f'Arena request blocked or failed (HTTP {e.code})'
+        e.close()
+        raise ValueError(message) from None
     except (URLError, TimeoutError):
         raise ValueError('Arena unreachable. Check its address and connection.') from None
 

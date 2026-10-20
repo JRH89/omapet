@@ -15,7 +15,7 @@ root_files = ['manifest.json', 'pyproject.toml', 'README.md', 'LICENSE', 'CHANGE
 files = [ROOT / f for f in root_files] + list(ROOT.glob('*.qml'))
 allowed = {'.py', '.qml', '.md', '.png', '.jsonc', '.css', '.service', '.timer', '.yml'}
 for directory in ('omapet', 'scripts', 'integrations', 'docs', 'tests', '.github'):
-    files.extend(p for p in (ROOT / directory).rglob('*') if p.is_file() and p.suffix in allowed
+    files.extend(p for p in (ROOT / directory).rglob('*') if p.is_file() and (p.suffix in allowed or p.name == 'Dockerfile')
                  and '__pycache__' not in p.parts)
 files.append(ROOT / 'bin/omapet')
 out = ROOT / 'dist'

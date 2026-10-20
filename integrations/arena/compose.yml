@@ -1,0 +1,58 @@
+name: omapet-arena
+services:
+  arena:
+    build:
+      context: ./src
+      dockerfile: integrations/arena/Dockerfile
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:?Set a pinned Python image digest}
+    image: omapet-arena:local
+    restart: unless-stopped
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 0.5
+    volumes:
+      - ./state:/state
+      - ./secrets/invite:/run/secrets/invite:ro
+    networks: [arena]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18765/healthz',timeout=3).close()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: "3"}
+  tunnel:
+    image: ${CLOUDFLARED_IMAGE:?Set a pinned cloudflared image digest}
+    restart: unless-stopped
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 0.5
+    network_mode: service:arena
+    depends_on:
+      arena:
+        condition: service_healthy
+        restart: true
+    command: [--no-autoupdate, tunnel, --config, /etc/omapet/cloudflared.yml, run]
+    volumes:
+      - ./cloudflared.yml:/etc/omapet/cloudflared.yml:ro
+      - ./secrets/tunnel.json:/run/secrets/tunnel.json:ro
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: "3"}
+networks:
+  arena: {}

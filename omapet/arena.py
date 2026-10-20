@@ -5,6 +5,9 @@ import hashlib
 import hmac
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import math
+import socket
+from collections import OrderedDict
 from pathlib import Path
 import secrets
 import threading
@@ -28,6 +31,19 @@ class Arena:
 
     def request(self, route, body, token):
         with self.lock:
+            if not isinstance(body, dict): raise ValueError('Expected a JSON object')
+            if route == '/register':
+                name = body.get('name', 'Sprout')
+                if not isinstance(name, str) or not name.strip() or len(name) > 24 or not name.isprintable():
+                    raise ValueError('Pet name must be 1–24 printable characters')
+                if not isinstance(body.get('invite'), str): raise ValueError('Invalid invitation')
+            if route == '/queue':
+                stats = body.get('traits', {})
+                if not isinstance(stats, dict): raise ValueError('Invalid traits')
+                for key in ('strength', 'stamina', 'agility', 'defense'):
+                    value = stats.get(key, 10)
+                    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+                        raise ValueError('Traits must be finite numbers')
             players = self.data['players']
             if route == '/register':
                 if not hmac.compare_digest(str(body.get('invite', '')), self.invite):
@@ -35,7 +51,7 @@ class Arena:
                 if len(players) >= 1000:
                     raise ValueError('Arena is full')
                 key, secret = secrets.token_hex(12), secrets.token_urlsafe(32)
-                players[key] = {'name': str(body.get('name', 'Sprout'))[:24],
+                players[key] = {'name': name.strip(),
                                 'token': hashlib.sha256(secret.encode()).hexdigest(),
                                 'queued': False, 'match': None, 'wins': 0, 'last': time.time()}
                 self.save()
@@ -52,6 +68,10 @@ class Arena:
                     m['winner'] = 'abandoned'
                     m['log'].append('Match expired after five minutes without a completed turn.')
             if route == '/queue':
+                # Bound saved history without deleting any active match.
+                finished = sorted((m for m in self.data['matches'].values() if m['winner'] is not None),
+                                  key=lambda m: m['updated'], reverse=True)
+                for old in finished[1000:]: self.data['matches'].pop(old['id'], None)
                 existing = self.data['matches'].get(p['match'])
                 if existing and existing['winner'] is None:
                     raise ValueError('Finish your current match first')
@@ -115,29 +135,112 @@ class Arena:
                     'online': sum(time.time() - v['last'] < 120 for v in players.values())}
 
 
-def handler(arena):
+class RequestLimits:
+    """Bounded per-IP throttles; caller must only trust proxy headers on loopback."""
+    def __init__(self):
+        self.entries = OrderedDict()
+        self.lock = threading.Lock()
+
+    def allow(self, peer, registration=False, now=None):
+        now = time.monotonic() if now is None else now
+        with self.lock:
+            for key, capacity, rate in [('global', 120, 60),
+                                         ('ip:' + peer, 30, 5)] + (
+                    [('registrations', 20, 1/3), ('register:' + peer, 3, 1/60)] if registration else []):
+                tokens, updated = self.entries.pop(key, (capacity, now))
+                tokens = min(capacity, tokens + max(0, now-updated)*rate)
+                allowed = tokens >= 1
+                self.entries[key] = (tokens-1 if allowed else tokens, now)
+                while len(self.entries) > 4096: self.entries.popitem(last=False)
+                if not allowed: return False
+            return True
+
+
+class ArenaHTTPServer(ThreadingHTTPServer):
+    daemon_threads = True
+    request_queue_size = 32
+
+    def __init__(self, address, request_handler):
+        self.slots = threading.BoundedSemaphore(16)
+        super().__init__(address, request_handler)
+
+    def process_request(self, request, address):
+        if not self.slots.acquire(blocking=False):
+            self.shutdown_request(request)
+            return
+        try: super().process_request(request, address)
+        except BaseException:
+            self.slots.release()
+            raise
+
+    def process_request_thread(self, request, address):
+        try: super().process_request_thread(request, address)
+        finally: self.slots.release()
+
+
+def handler(arena, trust_cloudflare=False):
+    limits = RequestLimits()
     class Handler(BaseHTTPRequestHandler):
         def setup(self):
             super().setup()
-            self.connection.settimeout(10)
+            self.connection.settimeout(5)
+
+        server_version = 'OmapetArena'
+        sys_version = ''
+
+        def respond(self, code, result, html=False):
+            payload = result.encode() if html else json.dumps(result).encode()
+            try:
+                self.send_response(code)
+                self.send_header('Content-Type', 'text/html; charset=utf-8' if html else 'application/json')
+                self.send_header('Referrer-Policy', 'no-referrer')
+                self.send_header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+                self.send_header('Content-Length', str(len(payload)))
+                self.send_header('Cache-Control', 'no-store')
+                self.send_header('X-Content-Type-Options', 'nosniff')
+                self.send_header('Connection', 'close')
+                if code == 429: self.send_header('Retry-After', '60')
+                self.end_headers()
+                self.wfile.write(payload)
+            except (OSError, socket.timeout): pass
+            self.close_connection = True
+
+        def peer(self):
+            # Only enable this behind a dedicated, loopback-only cloudflared origin.
+            if trust_cloudflare and self.client_address[0] in ('127.0.0.1', '::1'):
+                import ipaddress
+                try: return str(ipaddress.ip_address(self.headers.get('CF-Connecting-IP', '')))
+                except ValueError: pass
+            return self.client_address[0]
+
+        def do_GET(self):
+            if self.path in ('/', '/index.html'):
+                from .arena_page import PAGE
+                self.respond(200, PAGE, html=True)
+            elif self.path == '/healthz': self.respond(200, {'ok': True})
+            else: self.respond(404, {'error': 'Not found'})
 
         def do_POST(self):
+            if self.path not in ('/register', '/status', '/queue', '/leave', '/move'):
+                self.respond(404, {'error': 'Not found'}); return
+            if not limits.allow(self.peer(), self.path == '/register'):
+                self.respond(429, {'error': 'Too many requests; try again shortly'}); return
             try:
+                if self.headers.get('Transfer-Encoding'): raise ValueError('Chunked requests are not supported')
                 length = int(self.headers.get('Content-Length', '0'))
                 if length <= 0 or length > 8192: raise ValueError('Invalid request size')
-                body = json.loads(self.rfile.read(length))
+                raw = self.rfile.read(length)
+                if len(raw) != length: raise ValueError('Incomplete request')
+                body = json.loads(raw)
                 if not isinstance(body, dict): raise ValueError('Expected a JSON object')
                 token = self.headers.get('Authorization', '').removeprefix('Bearer ')
                 result = arena.request(self.path, body, token)
                 code = 200
-            except (ValueError, KeyError, TypeError, OverflowError) as exc:
+            except (ValueError, KeyError, TypeError, OverflowError, UnicodeError) as exc:
                 code, result = 400, {'error': str(exc)}
-            payload = json.dumps(result).encode()
-            self.send_response(code)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', str(len(payload)))
-            self.end_headers()
-            self.wfile.write(payload)
+            except (OSError, socket.timeout):
+                self.respond(408, {'error': 'Request timed out'}); return
+            self.respond(code, result)
 
         def log_message(self, *_): pass
     return Handler
@@ -145,6 +248,7 @@ def handler(arena):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--trust-cloudflare', action='store_true', help='Trust CF-Connecting-IP from a loopback-only tunnel origin')
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--state', default='arena.json')
@@ -152,7 +256,9 @@ def main():
     args = parser.parse_args()
     invite = Path(args.invite_file).read_text().strip()
     if len(invite) < 16: parser.error('Use an invitation of at least 16 characters')
-    server = ThreadingHTTPServer((args.host, args.port), handler(Arena(args.state, invite)))
+    if args.trust_cloudflare and args.host not in ('127.0.0.1', '::1'):
+        parser.error('--trust-cloudflare requires a loopback listener')
+    server = ArenaHTTPServer((args.host, args.port), handler(Arena(args.state, invite), args.trust_cloudflare))
     server.daemon_threads = True
     print(f'Arena listening on {args.host}:{args.port}. Use HTTPS or a trusted private network.')
     try: server.serve_forever()

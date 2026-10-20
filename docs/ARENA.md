@@ -6,6 +6,8 @@ The arena is an optional feature for small, trusted groups. It is not required
 for installation, GitHub progression, or pet care. Run the server command below
 from the source checkout; player commands use the optional `omapet` launcher.
 
+For an isolated Cloudflare Tunnel deployment, see [hosting and operations](HOSTING.md).
+
 ## Meet in the arena
 
 One person hosts; friends connect to the same server over a trusted LAN/VPN or an
@@ -24,7 +26,8 @@ omapet
 ```
 
 For a trusted LAN/VPN, bind `--host` to that interface's address. Internet-facing
-servers should sit behind HTTPS, request-rate limits, and connection limits.
+servers should sit behind HTTPS. The server bounds connections and applies basic
+per-IP and global request limits; add edge controls for larger deployments.
 The stdlib HTTP server is intended for small private groups. An invitation grants
 registration access; treat it as a shared secret. HTTP sends arena tokens in cleartext,
 so use HTTPS outside a trusted network. No GitHub credentials, logins, repository

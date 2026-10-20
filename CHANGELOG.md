@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add a public arena welcome page with installation, private-invite join instructions,
+  server health, and a guide to terminal battles.
+
+- Harden invite-only arena hosting with bounded connections, request throttling,
+  strict registration/trait validation, health checks, and capped match history.
+- Add an isolated Docker/Cloudflare Tunnel deployment and verified daily backups.
+
 - Make energy easier to maintain: meals restore 8 energy, sleep restores 20/hour,
   awake drain is 1/hour, and playing costs 6 energy.
 
