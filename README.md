@@ -113,6 +113,7 @@ GitHub token or send it to an arena server. Sync is manual by default.
 | **q** | Quit | | |
 
 - [Care, progression, characters, roaming, and optional hourly sync](docs/GUIDE.md)
+- Try offline battles with `omapet arena demo`, or press **d** in the TUI Arena. No pet stats change.
 - [Arena welcome page](https://arena.codefrontlabs.com) — invite-only pilot and join instructions.
 - [Private arena setup and battle rules](docs/ARENA.md)
 - [Hosting, backups, and tunnel isolation](docs/HOSTING.md)

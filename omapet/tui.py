@@ -67,22 +67,9 @@ def dashboard(screen, worker):
             put(5, 2, 'Give your companion a little room: 64 columns × 24 rows.', 3)
             put(7, 2, f"{s['name']} · {s['status']} · Food {s['food']:.0f} · Energy {s['energy']:.0f}", 2)
         elif arena:
-            box(4, left, h - 9, width, 'FRIENDLY ARENA')
-            put(6, left + 3, '[j] Join queue   [1] Strike   [2] Guard   [3] Feint', 2)
-            put(7, left + 3, '[l] Leave / concede · Strike > Feint > Guard > Strike', 3)
-            if result:
-                put(9, left + 3, f"{result['online']} online · " + ('Searching for a rival…' if result['queued'] else 'Ready for your next spar'), 1)
-                m = result.get('match')
-                if m:
-                    for i, player in enumerate(m['players']):
-                        put(11 + i, left + 3, f"{m['names'][player]} {'(you)' if player == result['id'] else ''}  ♥ {m['hp'][player]}", 2, True)
-                    put(14, left + 3, f"ROUND {m['round']} · " + ('Move locked. Waiting…' if m['submitted'] else 'Choose your move.'), 4)
-                    if m['winner']:
-                        put(14, left + 3, 'Result: ' + m['names'].get(m['winner'], m['winner']) + ' · [j] play again', 3)
-                    for i, line in enumerate(m['log'][-max(0, h - 24):]):
-                        if 16 + i < h - 6: put(16 + i, left + 3, line[:width - 6])
-            else:
-                put(10, left + 3, 'Connect with: omapet arena connect URL', 3)
+            from .simulator import draw
+            draw(put, box, result, s['character'], 'robot', pet_colors, left, width, h)
+
         else:
             split = min(34, width // 2)
             frame = int(time.monotonic() * 5)
@@ -162,6 +149,9 @@ def dashboard(screen, worker):
                 continue
             if key == ord('q'): return
             if key == ord('a'): arena = not arena; next_poll = 0
+            elif arena and key == ord('d'):
+                from .simulator import play
+                play(screen)
             elif arena and key in map(ord, 'j123l') and future is None:
                 from .network import request
                 route = '/queue' if key == ord('j') else '/leave' if key == ord('l') else '/move'

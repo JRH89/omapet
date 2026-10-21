@@ -8,6 +8,25 @@ from the source checkout; player commands use the optional `omapet` launcher.
 
 For an isolated Cloudflare Tunnel deployment, see [hosting and operations](HOSTING.md).
 
+## Try a practice battle
+
+```sh
+omapet arena demo
+```
+
+Or open the TUI, press **a** for Arena, then **d** for offline practice. Choose
+**1** Strike, **2** Guard, or **3** Feint. Your CPU rival commits its choice before
+you pick yours; after a brief move-lock animation, the real arena rules resolve
+the round. Press **n** for a new rival/rematch, or **q** / **Esc** to return.
+
+Practice uses your saved name, character, and training traits. The rival gets the
+same traits for a balanced preview. All players, HP, moves, and results exist only
+in a disposable local arena; no network connection or invitation is needed. It
+never changes your real pet, awards XP, spends energy, or replaces your saved
+arena connection. Normal real-world care timers still pass while you practice.
+The shared battle view also appears in the live arena. Older servers may not
+report opponent characters; those use a generic robot portrait.
+
 ## Meet in the arena
 
 One person hosts; friends connect to the same server over a trusted LAN/VPN or an

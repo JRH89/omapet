@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add offline CPU sparring (`omapet arena demo`, or **d** in Arena) with portraits,
+  HP, hidden choices, round results, and rematches using the real battle rules.
+  Practice never changes pet progress or the saved server connection.
+
 - Add a public arena welcome page with installation, private-invite join instructions,
   server health, and a guide to terminal battles.
 

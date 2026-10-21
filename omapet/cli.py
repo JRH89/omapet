@@ -31,6 +31,7 @@ def main():
     fix = sub.add_parser('repair', help='Repair one screen crack, or all for keyboard access')
     fix.add_argument('crack_id')
     arena = sub.add_parser('arena'); arena_sub = arena.add_subparsers(dest='action')
+    arena_sub.add_parser('demo', help='Offline practice battle against a CPU; no pet changes')
     conn = arena_sub.add_parser('connect'); conn.add_argument('url')
     for cmd in ('status', 'queue', 'leave'): arena_sub.add_parser(cmd)
     move = arena_sub.add_parser('move'); move.add_argument('move', choices=['strike', 'guard', 'feint'])
@@ -51,6 +52,9 @@ def main():
             with store() as s: apply_days(s, account, days)
             print(s['message']); return
         if args.command == 'arena':
+            if args.action == 'demo':
+                from .simulator import run
+                run(); return
             from . import network
             if args.action == 'connect':
                 network.connect(args.url, getpass.getpass('Arena invitation: '))
