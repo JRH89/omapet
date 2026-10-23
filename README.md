@@ -1,11 +1,13 @@
 # Omapet
 
-A desktop companion for **Omarchy Quattro**. Care for a tiny pet, help it grow
-through GitHub contributions, and let it wander around your desktop.
+A desktop companion for **Omarchy Quattro**. Collect tiny pets, help them grow
+through everyday care and GitHub contributions, and let them wander around your desktop.
 
-Choose from twenty characters, name your companion, and keep it close in a compact
-widget or terminal dashboard. Useful care and GitHub activity both earn experience. Collect companions,
-let them roam together, and exchange pets through your private arena. Vacation mode pauses care when you need a break.
+Choose from **20 characters** and keep up to **24 pets**, each with its own name,
+needs, XP, and trained stats. Play together, spar locally, or take two-pet teams
+into a private online arena. Put pets up for adoption or trade a high-level
+companion to a friend—their progress goes with them. Vacation pauses care when
+you need a break.
 
 **Python 3.11+ · No pip dependencies · MIT licensed**
 
@@ -23,7 +25,31 @@ let them roam together, and exchange pets through your private arena. Vacation m
 
 ![Omapet TUI with a frog companion, care meters, training stats and keyboard controls](docs/screenshots/tui.png)
 
-All three images are actual screenshots of the running widget and TUI.
+The habitat and terminal images above are screenshots of the running widget and TUI.
+
+### Out of the habitat
+
+Use **Let out ↗** for one pet or **All out** for the household. Awake, healthy pets
+run around your screen; optional surprise escapes can happen too. Click a roaming
+pet to bring it home after cleaning up any messes.
+
+![Octocat, Rust crab, and Android roaming together across a staged developer desktop](docs/screenshots/desktop-escape.png)
+
+<table>
+  <tr><th>Bonk! A pretend screen crack</th><th>Oops. Pixel poop.</th></tr>
+  <tr>
+    <td valign="top"><img src="docs/screenshots/desktop-cracks.png" alt="Rust crab with bonk stars beside two screen cracks and their Repair buttons" width="460"></td>
+    <td valign="top"><img src="docs/screenshots/desktop-poop.png" alt="Beaver beside a pixel poop pile with a Clean up button" width="460"></td>
+  </tr>
+</table>
+
+Click **Repair** on cracks and **Clean up** on poop. These are cosmetic desktop
+effects; they do not damage your screen or files. Up to four messes can appear,
+and your pet waits for cleanup before coming home.
+
+*The adventure images are staged demo scenes rendered with Omapet's actual sprites,
+run/bonk poses, crack effects, and cleanup controls. The example editor, habitat
+placeholder, and arrangement are for the demo; your apps stay underneath the pets.*
 
 ## Install
 
@@ -39,6 +65,7 @@ installer, background service, or global `omapet` command is needed.
 - **Left-click the bar widget** to open the TUI.
 - **Right-click the bar widget** to show or hide the desktop pet.
 - Press **n** in the TUI to name your pet, or **b** to choose its character.
+- Press **k** for your collection and exchange board, **h** to hatch, or **Tab** to switch pets.
 - In the habitat, hover over an icon to see its label. **≡** opens detailed view.
 - Drag the pet, header, or empty habitat space to move its home. Its position is saved.
 - Preview a cosmetic pet screensaver from Detailed view. [Enable it for idle time](docs/GUIDE.md#pet-screensaver).
@@ -73,17 +100,57 @@ without this optional step.
 
 | Feature | How it works |
 | --- | --- |
-| Twenty companions | Twelve original pets plus octocat, Android, Rust crab, Docker whale, PostgreSQL elephant, Perl camel, Gradle beaver, and a bug. |
+| Twenty companions | Twelve original pets plus octocat, Android, Rust crab, Docker whale, PostgreSQL elephant, Perl camel, Beaver, and a bug. |
 | Pet collection | Keep up to 24 pets with separate names, needs, levels, and training. Press **k** in the TUI. |
 | Adoption and trading | List pets on a connected private arena. Adopt for free or exchange pets; XP and trained stats travel with them. |
 | Everyday care | Feed, clean, play, rest, and treat sickness. Animated snacks and bubbles confirm actions. |
 | Compact or detailed | One row of icon buttons, or care meters, combat traits, XP, and GitHub activity. |
-| Desktop adventures | Let your pet out and click it to bring it home. Optional surprise escapes happen while it is awake and healthy. |
+| Desktop adventures | Let one pet or the household roam. Surprise escapes, bonks, screen cracks, and pixel poop keep things lively. Click messes to repair or clean up. |
 | Time off | Vacation freezes care needs. Gentle mode prevents death; hardcore mode is opt-in. |
 | Friendly battles | Local 1v1/2v2 sparring and online battles with one or two pets per player. Online rewards are capped. |
 | Care progression and moods | Useful care earns XP; low joy causes loneliness and sadness with visible expressions. |
 
+### Developer-inspired companions
+
+The eight new pets join the original cat, fox, bunny, frog, bear, owl, slime,
+robot, penguin, snake, gopher, and rubber duck. Each has a distinct desktop sprite
+and terminal portrait.
+
+![The eight new companions: octocat, Android robot, Rust crab, Docker whale, PostgreSQL elephant, Perl camel, Beaver, and bug](docs/screenshots/developer-pets.png)
+
+| Companion | Inspired by | Character ID |
+| --- | --- | --- |
+| Octocat | GitHub's cat-and-octopus mascot | `octocat` |
+| Android | The little green Android robot | `android` |
+| Rust crab | Ferris and the Rust community | `crab` |
+| Docker whale | Containers on a tiny whale | `whale` |
+| PostgreSQL elephant | The database elephant | `elephant` |
+| Perl camel | Perl's camel mascot | `camel` |
+| Beaver | Database tooling, with a nod to [DBeaver](https://dbeaver.io/) | `beaver` |
+| Bug | Every developer's recurring visitor | `bug` |
+
+Press **h** to hatch one in the TUI, or run `omapet pets hatch crab --name Ferris`.
+Changing an existing pet's character with **b** is cosmetic and keeps its progress.
+These are Omapet's own stylized drawings, not official mascot artwork.
+
+<details>
+<summary>See all 20 companions</summary>
+
 ![All twenty Omapet characters in their pixel style](docs/screenshots/characters.png)
+
+</details>
+
+### Growth through care and code
+
+Useful feeding, cleaning, play, medicine, and an hour of sleep each earn **12 XP**,
+up to **120 care XP per pet per UTC day**. Care rewards have cooldowns, so repeating
+an action on an already comfortable pet does not farm XP. Levels improve combat
+traits, making offline care a way to grow stronger too.
+
+Low joy now shows up as **lonely** or **sad**, including visible expressions.
+Play restores joy; food, rest, cleaning, and medicine handle the other needs.
+Sleeping no longer hides sickness. See the [care guide](docs/GUIDE.md#progress-that-makes-sense)
+for thresholds and reward rules.
 
 GitHub contributions build different strengths:
 
@@ -128,6 +195,12 @@ For **Waybar**, merge [the module configuration](integrations/waybar.jsonc), add
 `custom/omapet` to your bar, and include [the styles](integrations/waybar.css).
 The adapter uses the optional `omapet` launcher. The on-screen habitat still
 requires the Quattro plugin; the standalone TUI does not.
+
+Online adoption, trades, and 2v2 require an updated private arena server and
+clients. Two-pet teams match other two-pet teams. Adoption is free; an open trade
+accepts any living pet in return, so friends can exchange pets at different levels.
+XP and trained stats transfer, while GitHub identities and contribution histories
+stay with their household. [Collection and exchange guide](docs/GUIDE.md#your-household-adoption-and-trading).
 
 The arena is an early feature for small, trusted groups. Combat is resolved on
 the server, but clients supply their traits. It is not a ranked or cheat-resistant

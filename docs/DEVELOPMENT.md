@@ -61,6 +61,21 @@ report `PanelWindow` as uncreatable, unresolved margin types, or missing
 in Quattro as well. Single-monitor rendering, roaming, hide/show, and position
 restoration have been checked locally. Multi-monitor hot-plug remains unverified.
 
+## Render README artwork
+
+```sh
+python3 scripts/render_showcase.py
+```
+
+This uses Qt's offscreen renderer and `qmltestrunner` to capture four staged demo
+scenes into `docs/screenshots/`: roaming, screen cracks, poop, and the eight new
+companions. `scripts/Showcase.qml` imports the production `PetSprite`, `CrackEffect`,
+and `PetButton` components. Its editor and layout are fictional; the README labels
+the results as staged demos. It does not launch desktop windows, capture personal
+apps, or read or alter the user's pet save. Review every generated PNG before
+committing it. The existing habitat and terminal images are direct application
+screenshots.
+
 ## Build the source archive
 
 ```sh

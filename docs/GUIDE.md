@@ -60,7 +60,7 @@ preserved. Each has its own desktop silhouette and terminal portrait.
 Press **b** in the TUI, choose **1–9**, **s** for snake, **g** for gopher, **d** for duck, or **0** for a surprise. Press **n** to rename.
 Changing characters is cosmetic and keeps all stats and progress. Eight more developer-themed
 companions are available: octocat, Android robot, Rust crab, Docker whale, PostgreSQL
-elephant, Perl camel, Gradle beaver, and a bug. The picker shows every shortcut.
+elephant, Perl camel, Beaver, and a bug. The picker shows every shortcut.
 
 ```sh
 omapet character fox      # or cat, bunny, frog, bear, owl, slime, robot, penguin, snake, gopher, duck, random
