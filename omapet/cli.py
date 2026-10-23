@@ -36,7 +36,7 @@ def main():
     hatch = ps.add_parser('hatch'); hatch.add_argument('character', choices=[*CHARACTERS, 'random']); hatch.add_argument('--name')
     select = ps.add_parser('switch'); select.add_argument('pet')
     for command in ('play', 'spar'):
-        pair = ps.add_parser(command); pair.add_argument('ids', nargs='+')
+        pair = ps.add_parser(command, help='Train household pets and earn XP' if command == 'spar' else 'Play with two pets'); pair.add_argument('ids', nargs='+')
     roam = ps.add_parser('roam'); roam.add_argument('mode', choices=['on', 'off']); roam.add_argument('--pet', default='all')
     offer = ps.add_parser('offer'); offer.add_argument('pet'); offer.add_argument('--mode', choices=['adoption', 'trade'], default='adoption')
     claim = ps.add_parser('claim'); claim.add_argument('listing'); claim.add_argument('--pet', help='Pet to give in return for a trade')

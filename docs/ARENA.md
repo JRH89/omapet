@@ -94,3 +94,14 @@ and each client's `arena-client.json`: they now also identify escrow owners,
 open offers, transfer receipts, and pending deliveries. Restoring an old backup
 can undo exchanges; coordinate server/client recovery together. As with battles,
 pets originate from client-supplied saves and this is a trusted-group feature.
+
+## Train your own pets
+
+Household training works offline and uses the same rules. In the TUI, press **k**,
+select a different pet from the active one, and press **f**. Or run
+`omapet pets spar FIRST_ID SECOND_ID`; pass four IDs for two teams of two.
+Every participant earns 20 XP in each of their first five household spars per UTC
+day, including the losing team. Every spar spends 10 energy per pet, restores
+5 joy, and causes no injuries. Limits are per pet and follow it through trades.
+These rewards are separate from online battle rewards. The CPU demo remains a
+preview that does not change your real pets.

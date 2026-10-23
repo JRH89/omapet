@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Let household pets train each other for 20 XP per participant in their first
+  five local spars per UTC day, with persistent limits across switches and trades.
+  Show XP and level-ups in 1v1/2v2 results; keep energy costs and no injuries.
+
 - Add a household of up to 24 individually saved pets, hatching, switching, care
   targeting, play together, and multiple roaming desktop companions.
 - Add private-arena adoption and open trades with escrow, durable transfer retries,

@@ -84,9 +84,18 @@ screen-mess behavior. In the collection, **o** releases pets and **i** brings th
 (after repairing any active-pet messes).
 
 Select a different pet from the active one and press **p** to play together or
-**f** for an automatic friendly 1v1 spar. Local spars use real combat rules, spend
-10 energy per participant, and grant no XP or injuries. For a local 2v2, supply
-four IDs: the first two form one team, and the last two form the other.
+**f** to train them in an automatic friendly 1v1 spar. Local training uses the real
+combat rules. Every participant earns **20 XP** for each of their first **five
+household spars per UTC day**, win or lose. That is up to 100 training XP per pet
+per day, separate from care and online battle rewards. Further spars are still
+available but give no XP. Each spar spends 10 energy per participant, restores
+5 joy, and causes no injuries. Pets must be awake, healthy, out of vacation mode,
+and have at least 20 energy. Level-ups improve all four combat traits.
+
+Daily training history stays with the pet when you switch, trade or adopt it.
+Other pets do not gain XP just for living in the household. For a local 2v2,
+supply four IDs: the first two form one team, and the last two form the other.
+All four participants can earn training XP, including knocked-out teammates.
 
 ```sh
 omapet pets list

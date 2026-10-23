@@ -85,10 +85,12 @@ def play_together(s, first, second):
     s['message'] = f"{a['name']} and {b['name']} played together!"
 
 
-def spar(s, ids):
-    """Auto-resolve a friendly household spar with the same arena combat rules."""
+def spar(s, ids, now=None):
+    """Train household pets with arena rules and five XP-bearing spars per pet/day."""
     import secrets
     import tempfile
+    import time
+    from datetime import datetime, timezone
     from pathlib import Path
     from .arena import Arena, MOVES
     from .core import traits
@@ -109,8 +111,23 @@ def spar(s, ids):
             for player, move in zip(players, moves):
                 result = arena.request('/move', {'move': move}, player['token'])
             if result['match']['winner']: break
+    today = datetime.fromtimestamp(time.time() if now is None else now, timezone.utc).date().isoformat()
+    rewards = []
     for p in pets:
+        previous_level = level(p)
         p['energy'] -= 10
         p['joy'] = min(100, p['joy'] + 5)
-    s['message'] = 'Friendly spar complete. No injuries; each pet used 10 energy.'
+        if p.get('training_day') != today:
+            p.update(training_day=today, training_count=0)
+        gain = 20 if p['training_count'] < 5 else 0
+        p['xp'] += gain
+        if gain: p['training_count'] += 1
+        rewards.append(dict(pet_id=p['id'], name=p['name'], xp=gain, level=level(p),
+                            leveled_up=level(p) > previous_level))
+    report = ' · '.join(f"{r['name']} +{r['xp']} XP" +
+                        (f" (level {r['level']}!)" if r['leveled_up'] else '') +
+                        (' (daily training limit)' if not r['xp'] else '') for r in rewards)
+    s['message'] = f'Training complete: {report}. Each pet used 10 energy; no injuries.'
+    result['match']['training_rewards'] = rewards
+    result['match']['log'].append(s['message'])
     return result['match']

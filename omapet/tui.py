@@ -89,7 +89,7 @@ def dashboard(screen, worker):
                         f"{item['name']} · {item['character']} L{item['level']} · {item['mode']}" + (' · YOUR OFFER' if item.get('mine') else ''), 2)
             else:
                 put(6, left + 3, '[↑/↓] Select [Enter] Care for pet [h] Hatch [o] All out [i] All home', 2)
-                put(7, left + 3, '[p] Play together [f] Spar [j] Online 2v2 (active + selected)', 2)
+                put(7, left + 3, '[p] Play together [f] Train (+XP) [j] Online 2v2 (active + selected)', 2)
                 put(8, left + 3, '[u] Offer for adoption [t] Offer for trade [e] Exchange board', 2)
                 start = max(0, selected - max(0, h - 23))
                 for row, pet in enumerate(pets[start:start + max(1, h - 20)]):

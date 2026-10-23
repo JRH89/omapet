@@ -107,7 +107,7 @@ without this optional step.
 | Compact or detailed | One row of icon buttons, or care meters, combat traits, XP, and GitHub activity. |
 | Desktop adventures | Let one pet or the household roam. Surprise escapes, bonks, screen cracks, and pixel poop keep things lively. Click messes to repair or clean up. |
 | Time off | Vacation freezes care needs. Gentle mode prevents death; hardcore mode is opt-in. |
-| Friendly battles | Local 1v1/2v2 sparring and online battles with one or two pets per player. Online rewards are capped. |
+| Training and battles | Pit your own pets against each other in 1v1/2v2 training for XP, or battle online with one or two pets per player. Rewards are capped. |
 | Care progression and moods | Useful care earns XP; low joy causes loneliness and sadness with visible expressions. |
 
 ### Developer-inspired companions
@@ -146,6 +146,13 @@ Useful feeding, cleaning, play, medicine, and an hour of sleep each earn **12 XP
 up to **120 care XP per pet per UTC day**. Care rewards have cooldowns, so repeating
 an action on an already comfortable pet does not farm XP. Levels improve combat
 traits, making offline care a way to grow stronger too.
+
+Your own pets can train each other too: press **k**, select a different pet from
+the active one, and press **f**. Both pets earn **20 XP** in each of their first
+**five household spars per UTC day**, regardless of who wins. Every spar costs
+10 energy per pet and causes no injuries. Level-ups improve their combat traits;
+2v2 training is also available with `omapet pets spar A_ID B_ID C_ID D_ID`.
+Training limits follow each pet when switching households through adoption or trades.
 
 Low joy now shows up as **lonely** or **sad**, including visible expressions.
 Play restores joy; food, rest, cleaning, and medicine handle the other needs.

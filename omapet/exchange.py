@@ -25,8 +25,20 @@ def validate_pet(raw):
             if type(n) is not int or not 0 <= n <= 10**9: raise ValueError()
     except (KeyError, TypeError, AttributeError, ValueError):
         raise ValueError('Invalid pet profile') from None
+    training = {}
+    if 'training_day' in raw or 'training_count' in raw:
+        from datetime import date
+        try:
+            training_day = raw['training_day']
+            count = raw['training_count']
+            if not isinstance(training_day, str) or date.fromisoformat(training_day).isoformat() != training_day:
+                raise ValueError()
+            if type(count) is not int or not 0 <= count <= 5: raise ValueError()
+        except (KeyError, TypeError, ValueError): raise ValueError('Invalid training history') from None
+        training = dict(training_day=training_day, training_count=count)
     # Keep progression and needs; never publish account history, desktop settings or credentials.
     pet = {k: deepcopy(raw[k]) for k in (*numeric, 'id', 'character', 'name', 'totals')}
+    pet.update(training)
     pet.update(version=1, sleeping=False, vacation=False, hardcore=False, dead=False,
                sick=bool(raw.get('sick')), battle_rewards=[], cracks=[], repairing_cracks=False,
                account=None, days={}, synced=None, overlay=False, roaming=False,

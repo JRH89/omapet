@@ -104,6 +104,58 @@ class CollectionTests(unittest.TestCase):
         self.assertTrue(all(p['health'] == 100 for p in collection.all_pets(s)))
 
 
+    def test_household_training_rewards_both_sides_and_levels_up(self):
+        s = core.fresh()
+        s['xp'] = 80
+        peer = collection.hatch(s, 'crab')
+        spectator = collection.hatch(s, 'duck')
+        old_traits = core.traits(s)
+        result = collection.spar(s, [s['id'], peer['id']], now=10000)
+        self.assertTrue(result['completed'])
+        self.assertEqual([r['xp'] for r in result['training_rewards']], [20, 20])
+        self.assertTrue(result['training_rewards'][0]['leveled_up'])
+        self.assertEqual(core.level(s), 2)
+        self.assertTrue(all(core.traits(s)[k] > v for k, v in old_traits.items()))
+        self.assertEqual((s['xp'], peer['xp'], spectator['xp']), (100, 20, 0))
+        self.assertEqual((s['health'], peer['health']), (100, 100))
+        self.assertEqual((s['energy'], peer['energy']), (75, 75))
+        self.assertIn('+20 XP', result['log'][-1])
+
+    def test_training_cap_is_per_pet_survives_switch_and_resets_at_utc_midnight(self):
+        s = core.fresh()
+        first_id = s['id']
+        peer_id = collection.hatch(s, 'crab')['id']
+        for _ in range(5): collection.spar(s, [first_id, peer_id], now=86399)
+        self.assertEqual((s['xp'], collection.find(s, peer_id)['xp']), (100, 100))
+        collection.switch(s, peer_id)
+        result = collection.spar(s, [first_id, peer_id], now=86399)
+        self.assertEqual([r['xp'] for r in result['training_rewards']], [0, 0])
+        self.assertIn('daily training limit', s['message'])
+        self.assertEqual((s['training_count'], collection.find(s, first_id)['training_count']), (5, 5))
+        for pet in collection.all_pets(s): pet['energy'] = 85
+        fresh = collection.hatch(s, 'duck')
+        result = collection.spar(s, [peer_id, fresh['id']], now=86399)
+        self.assertEqual([r['xp'] for r in result['training_rewards']], [0, 20])
+        result = collection.spar(s, [first_id, peer_id], now=86400)
+        self.assertEqual([r['xp'] for r in result['training_rewards']], [20, 20])
+        self.assertEqual(s['training_count'], 1)
+
+    def test_two_on_two_training_rewards_all_four_and_saves_limits(self):
+        with tempfile.TemporaryDirectory() as home, patch.dict(os.environ, OMAPET_HOME=home):
+            with core.store() as s:
+                ids = [s['id']] + [collection.hatch(s, kind)['id'] for kind in ('crab', 'duck', 'whale')]
+                collection.spar(s, ids)
+            with core.store() as s:
+                for pet_id in ids:
+                    pet = collection.find(s, pet_id)
+                    self.assertEqual((pet['xp'], pet['training_count']), (20, 1))
+                collection.find(s, ids[2])['energy'] = 5
+                rejected = copy.deepcopy(s)
+                with self.assertRaisesRegex(ValueError, 'rested'): collection.spar(s, ids)
+                self.assertEqual(s, rejected)
+
+
+
 class ExchangeTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -139,6 +191,19 @@ class ExchangeTests(unittest.TestCase):
         self.req(self.b, 'claim', operation='claim', listing=listing, pet=low)
         self.assertEqual(self.req(self.b, 'list')['deliveries'][self.b['id'] + ':claim']['totals'], high['totals'])
         self.assertEqual(self.req(self.a, 'list')['deliveries'][self.b['id'] + ':claim']['id'], low['id'])
+
+    def test_training_history_transfers_and_invalid_limits_are_rejected(self):
+        pet = core.fresh()
+        pet.update(training_day='2026-10-23', training_count=5)
+        listing = self.req(self.a, 'offer', operation='trained', mode='adoption', pet=pet)['listing']
+        self.req(self.b, 'claim', operation='trained-claim', listing=listing)
+        received = next(iter(self.req(self.b, 'list')['deliveries'].values()))
+        self.assertEqual((received['training_day'], received['training_count']), ('2026-10-23', 5))
+        for invalid in (-1, 6, True, '5'):
+            bad = core.fresh()
+            bad.update(training_day='2026-10-23', training_count=invalid)
+            with self.assertRaisesRegex(ValueError, 'training history'):
+                self.req(self.a, 'offer', operation='invalid'+str(invalid), mode='adoption', pet=bad)
 
     def test_cancel_requires_owner_and_returns_pet(self):
         pet = core.fresh()
