@@ -9,7 +9,7 @@ Item {
     property bool animated: true
     implicitWidth: 144
     implicitHeight: 126
-    readonly property var palettes: ({cat: "#e8c9ad", fox: "#efa76e", bunny: "#d4b5e8", frog: "#a6cf72", bear: "#cda67f", owl: "#93b9dd", slime: "#84d8cf", robot: "#c1c8d8", penguin: "#526b85", snake: "#97ce79", gopher: "#ba936d", duck: "#f5d461"})
+    readonly property var palettes: ({cat: "#e8c9ad", fox: "#efa76e", bunny: "#d4b5e8", frog: "#a6cf72", bear: "#cda67f", owl: "#93b9dd", slime: "#84d8cf", robot: "#c1c8d8", penguin: "#526b85", snake: "#97ce79", gopher: "#ba936d", duck: "#f5d461", octocat: "#ab9dd9", android: "#a4c639", crab: "#f18a61", whale: "#6bb9e8", elephant: "#8ba4ce", camel: "#d5b17d", beaver: "#8bbcb2", bug: "#df87b2"})
     Timer { interval: root.effect === "run" ? 50 : 100; running: root.visible && root.animated; repeat: true; onTriggered: { root.frame++; art.requestPaint() } }
     onMoodChanged: art.requestPaint()
     onCharacterChanged: art.requestPaint()
@@ -49,6 +49,10 @@ Item {
                 }
             }
             function smile(x,y) {
+                if (root.mood === "sad" || root.mood === "lonely" || root.mood === "sick") {
+                    c.strokeStyle="#634d46"; c.lineWidth=2;
+                    c.beginPath(); c.moveTo(x-7,y+5); c.quadraticCurveTo(x,y-3,x+7,y+5); c.stroke(); return;
+                }
                 if (eating) { oval(x-5,y-2,10,4+(f%3)*2,"#563e3c"); return }
                 c.strokeStyle="#634d46"; c.lineWidth=1.5; c.lineCap="round";
                 c.beginPath(); c.moveTo(x,y-2); c.lineTo(x,y+2);
@@ -60,7 +64,55 @@ Item {
             let bob = root.effect === "run" ? (kind === "snake" ? Math.sin(f * 0.6) * 2 : Math.abs(Math.sin(f * 0.8)) * -8) : asleep ? Math.sin(f/8) : Math.sin(f/4)*2;
             c.translate(eating ? Math.sin(f*1.5)*2 : 0, eating ? Math.abs(Math.sin(f/2))*-5 : bob);
             let body = root.mood === "sick" ? "#c5b86c" : root.mood === "departed" ? "#8c98a3" : (root.palettes[kind] || root.palettes.cat);
-            if (kind === "cat") {
+            if (kind === "octocat") {
+                tri(26,15,29,34,body); tri(68,15,29,34,body);
+                oval(24,28,74,53,body); eye(46,51); eye(76,51); smile(61,64);
+                for(let i=0;i<5;i++) {
+                    let x=30+i*15, wave=Math.sin(f/4+i)*7;
+                    line(61,77,x,91+wave,body,9); oval(x-5,88+wave,11,7,body);
+                }
+            } else if (kind === "android") {
+                line(40,27,32,14,body,3); line(81,27,89,14,body,3);
+                rounded(28,27,66,38,18,body); eye(46,45); eye(76,45);
+                rect(28,63,66,28,body); rounded(12,62,12,29,5,body); rounded(98,62,12,29,5,body);
+                rounded(37,86,15,17,5,body); rounded(70,86,15,17,5,body);
+            } else if (kind === "crab") {
+                for(let i=0;i<3;i++) {
+                    line(34,69+i*7,17-i*3,83+i*6,body,5);
+                    line(88,69+i*7,105+i*3,83+i*6,body,5);
+                }
+                line(32,62,16,42,body,7); line(90,62,106,42,body,7);
+                oval(7,28,21,22,body); oval(95,28,21,22,body);
+                oval(27,48,69,42,body); line(43,55,43,35,body,5); line(79,55,79,35,body,5);
+                eye(43,35); eye(79,35); smile(61,72);
+            } else if (kind === "whale") {
+                oval(15,47,86,47,body); tri(91,44,28,35,body);
+                oval(25,72,63,19,"#d0eafa"); eye(37,64); smile(51,78);
+                for(let i=0;i<3;i++) rect(32+i*15,32,12,12,"#4394c7");
+                rect(47,17,12,12,"#4394c7"); line(17,58,11,44,body,6);
+            } else if (kind === "elephant") {
+                oval(25,56,74,40,body); oval(14,25,43,45,body); oval(68,25,43,45,body);
+                oval(33,24,56,48,body); eye(46,45); eye(76,45);
+                rounded(53,54,16,38,7,body); line(61,87,76,82,body,9);
+                rect(30,84,18,16,body); rect(77,84,18,16,body);
+            } else if (kind === "camel") {
+                oval(20,59,76,31,body); oval(32,42,31,39,body);
+                rounded(80,30,15,53,6,body); oval(77,23,30,23,body); eye(93,31);
+                line(30,83,25,101,body,8); line(76,83,81,101,body,8);
+                oval(48,65,25,16,"#ead1a5");
+            } else if (kind === "beaver") {
+                oval(80,65,35,33,"#597f79"); line(88,72,104,89,"#87a9a1",2);
+                oval(26,51,64,45,body); oval(24,16,19,19,body); oval(80,16,19,19,body);
+                oval(27,25,67,49,body); eye(45,44); eye(77,44); smile(61,57);
+                rect(54,61,6,10,"#fff4db"); rect(62,61,6,10,"#fff4db");
+                oval(29,91,24,10,body); oval(71,91,24,10,body);
+            } else if (kind === "bug") {
+                line(43,30,33,14,body,3); line(78,30,88,14,body,3);
+                for(let i=0;i<3;i++) { line(35,58+i*10,19,52+i*16,body,4); line(86,58+i*10,102,52+i*16,body,4) }
+                oval(31,42,59,57,body); line(61,52,61,93,"#834c6c",2);
+                oval(30,26,61,34,body); eye(46,41); eye(76,41); smile(61,51);
+                oval(43,68,9,9,"#834c6c"); oval(71,79,9,9,"#834c6c");
+            } else if (kind === "cat") {
                 // A seated kitten: curled tail, little paws, oversized round head.
                 c.strokeStyle=body; c.lineWidth=13; c.lineCap="round";
                 c.beginPath(); c.moveTo(79,85); c.bezierCurveTo(112,100,111,65,97,69); c.stroke();
@@ -229,6 +281,10 @@ Item {
                     let x=25+i*31, y=12+(i%2)*5-(f%3)*2;
                     rect(x-4,y,9,2,"#ffe6a0"); rect(x,y-4,2,10,"#ffe6a0");
                 }
+            }
+            if (root.mood === "sad" || root.mood === "lonely") {
+                c.fillStyle="#9ac9e7"; c.font="bold 12px monospace"; c.fillText(root.mood === "sad" ? ":(" : "…",96,20);
+                if (root.mood === "sad") oval(85,58+(f%8),4,7,"#9ac9e7");
             }
             if (asleep) { c.fillStyle="#b9d7e4"; c.font="bold 14px monospace"; c.fillText("z",91,27-(f%20)/2); c.fillText("Z",102,16-(f%20)/3) }
         }

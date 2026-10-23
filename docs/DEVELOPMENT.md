@@ -33,13 +33,15 @@ use `omarchy restart shell` if hot reload does not display a code change.
 ```sh
 python3 scripts/check_release.py
 omarchy plugin validate .
-QT_QPA_PLATFORM=offscreen /usr/lib/qt6/bin/qmltestrunner -input tests/qml
+QT_QPA_PLATFORM=offscreen QT_QUICK_CONTROLS_STYLE=Basic QT_QPA_PLATFORMTHEME= /usr/lib/qt6/bin/qmltestrunner -input tests/qml
 ```
 
 The portable checks include the manifest/version contract, required release
 assets, and Python tests. The QML tests distinguish clicks from drags and verify
 that a drag saves on release. GitHub responses are mocked; arena tests exercise
-a real local HTTP server.
+a real local HTTP server. Collection tests cover saved pet switching, care XP,
+transfer retries, concurrent adoptions, mailbox capacity, and two-pet rewards.
+The sprite test renders every character across five moods.
 
 On Arch, QML tools are commonly under `/usr/lib/qt6/bin`. To resolve Quattro's
 `qs.Ui` imports for linting, create temporary import aliases outside the plugin:

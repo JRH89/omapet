@@ -72,3 +72,25 @@ verified**. Local saves and arena rewards can be edited. This is a friendly aren
 not an anti-cheat or ranked service. Server restarts retain players and matches;
 change the invitation to prevent new registrations, and remove a player's record
 from the stopped server's state to revoke its token.
+
+## Collections, teams, and exchanges
+
+For online 2v2, press **k** to open your collection, select a different pet from
+the active one, and press **j**. Or run `omapet arena queue --team FIRST_ID SECOND_ID`.
+Two-pet teams only match other two-pet teams. Each living pet attacks every round;
+damage passes through the front pet before its teammate. The usual move controls
+apply to the entire team. Each participating pet receives XP, with the five-match
+daily reward limit shared by the household.
+
+The collection also includes an adoption/trade board. **u** offers the selected
+pet for free adoption, **t** offers it for any living pet in return, and **e** opens
+the board. **g** refreshes and collects arrivals; **Enter** adopts or trades your
+selected household pet for an offer. **x** cancels your own offer. Both sides keep
+their pets' XP and trained traits. See the [collection guide](GUIDE.md#your-household-adoption-and-trading)
+for commands, escrow behavior and recovery from interrupted transfers.
+
+Update both arena server and clients for these features. Preserve `arena.json`
+and each client's `arena-client.json`: they now also identify escrow owners,
+open offers, transfer receipts, and pending deliveries. Restoring an old backup
+can undo exchanges; coordinate server/client recovery together. As with battles,
+pets originate from client-supplied saves and this is a trusted-group feature.

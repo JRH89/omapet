@@ -75,6 +75,11 @@ def draw(put, box, result, own_kind, rival_kind, colors, left, width, height, pr
             filled=round(bars*hp/maximum)
             put(13,x,'♥ '+'▰'*filled+'▱'*(bars-filled)+f' {hp}',2 if hp>maximum*.3 else 3)
         else:put(13,x,f'♥ Battle HP {hp}',2 if hp>30 else 3)
+    if match.get('fighters'):
+        for i, p in enumerate(ids):
+            team = match['fighters'][p]
+            if len(team) > 1:
+                put(15, left+3+i*colwidth, ' / '.join(f"{t['name'][:10]} {t['hp']}♥" for t in team)[:colwidth-1], 2)
     winner=match['winner']
     line=('DRAW' if winner=='draw' else 'YOU WIN!' if winner==result['id'] else 'RIVAL WINS') if winner else ('Move locked…' if match['submitted'] else 'Choose your move')
     put(14,left+3,f"ROUND {min(match['round'],30)} · {line}",3 if winner else 4,True)

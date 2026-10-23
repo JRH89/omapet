@@ -5,8 +5,8 @@ from omapet.core import fresh, care
 
 
 class CharacterTests(unittest.TestCase):
-    def test_twelve_characters_and_random_assignment(self):
-        self.assertEqual(len(CHARACTERS), 12)
+    def test_twenty_characters_and_random_assignment(self):
+        self.assertEqual(len(CHARACTERS), 20)
         with patch('omapet.core.random_character', return_value='frog'):
             self.assertEqual(fresh()['character'], 'frog')
         with patch('omapet.characters.random_character', return_value='robot'):
@@ -19,7 +19,7 @@ class CharacterTests(unittest.TestCase):
             choose(s, kind)
             self.assertEqual((s['character'], s['name'], s['xp']), (kind, 'Bramble', 450))
         with self.assertRaises(ValueError): choose(s, 'invalid')
-        self.assertEqual(s['character'], 'duck')
+        self.assertEqual(s['character'], tuple(CHARACTERS)[-1])
         self.assertEqual(len(CHARACTER_KEYS), len(CHARACTERS))
         self.assertEqual(len(set(CHARACTER_KEYS)), len(CHARACTER_KEYS))
 

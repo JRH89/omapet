@@ -26,6 +26,7 @@ def dashboard(screen, worker):
     message = 'Welcome home. A little care, a little code.'
     future, arena, result, next_poll = None, False, None, 0
     modal, name_input = None, ''
+    collection_open, board_open, selected, board_selected, board = False, False, 0, 0, None
 
     def put(y, x, text, color=0, bold=False):
         h, w = screen.getmaxyx()
@@ -49,10 +50,15 @@ def dashboard(screen, worker):
                 if isinstance(value, tuple):
                     with store() as state: apply_days(state, *value)
                     message = state['message']
-                elif isinstance(value, dict): result = value
+                elif isinstance(value, dict):
+                    if 'listings' in value:
+                        board = value
+                        message = 'Exchange updated. Pets and deliveries are saved.'
+                        if value.get('pending_deliveries'): message += f" {value['pending_deliveries']} arrivals waiting for room."
+                    else: result = value
             except Exception as e: message = str(e)
             future = None
-        if arena and future is None and time.monotonic() > next_poll:
+        if arena and not collection_open and future is None and time.monotonic() > next_poll:
             from .network import request
             future = worker.submit(request)
             next_poll = time.monotonic() + 3
@@ -66,6 +72,29 @@ def dashboard(screen, worker):
         if h < 24 or w < 64:
             put(5, 2, 'Give your companion a little room: 64 columns × 24 rows.', 3)
             put(7, 2, f"{s['name']} · {s['status']} · Food {s['food']:.0f} · Energy {s['energy']:.0f}", 2)
+        elif collection_open:
+            pets = s['pets']
+            selected = min(selected, len(pets) - 1)
+            box(4, left, h - 9, width, 'PET EXCHANGE' if board_open else f"YOUR COLLECTION · {len(pets)}/24")
+            if board_open:
+                listings = (board or {}).get('listings', [])
+                board_selected = max(0, min(board_selected, len(listings) - 1))
+                put(6, left + 3, '[e] Household [g] Refresh/deliveries [Enter] Adopt/trade [x] Cancel offer', 2)
+                selected = min(selected, len(pets) - 1)
+                put(7, left + 3, f"Trade gives: {pets[selected]['name']} L{pets[selected]['level']} · Select in household first.", 3)
+                if not listings: put(9, left + 3, 'No offers loaded. [g] Refresh the exchange.', 0)
+                start = max(0, board_selected - max(0, h - 22))
+                for row, item in enumerate(listings[start:start + max(1, h - 19)]):
+                    put(9 + row, left + 3, ('› ' if start + row == board_selected else '  ') +
+                        f"{item['name']} · {item['character']} L{item['level']} · {item['mode']}" + (' · YOUR OFFER' if item.get('mine') else ''), 2)
+            else:
+                put(6, left + 3, '[↑/↓] Select [Enter] Care for pet [h] Hatch [o] All out [i] All home', 2)
+                put(7, left + 3, '[p] Play together [f] Spar [j] Online 2v2 (active + selected)', 2)
+                put(8, left + 3, '[u] Offer for adoption [t] Offer for trade [e] Exchange board', 2)
+                start = max(0, selected - max(0, h - 23))
+                for row, pet in enumerate(pets[start:start + max(1, h - 20)]):
+                    put(10 + row, left + 3, ('› ' if start + row == selected else '  ') +
+                        f"{pet['name']} · {pet['character']} L{pet['level']} · {pet['status']}" + (' · ACTIVE' if pet['active'] else ''), 2)
         elif arena:
             from .simulator import draw
             draw(put, box, result, s['character'], 'robot', pet_colors, left, width, h)
@@ -78,7 +107,7 @@ def dashboard(screen, worker):
             box(4, left, 10, split, title)
             box(4, left + split + 1, 10, width - split - 1, 'CARE')
             character = s['character']
-            mood = 'eating' if action == 'feed' and not s['sleeping'] else s['status']
+            mood = 'eating' if action == 'feed' and not s['sleeping'] else s.get('mood', s['status'])
             art = portrait(character, mood, frame)
             art_width = max(map(len, art))
             art_x = left + (split - art_width) // 2
@@ -106,26 +135,26 @@ def dashboard(screen, worker):
             if s.get('cracks'):
                 put(17, left + 1, f"[x] Clean up a mess · {len(s['cracks'])} left before your pet can go home", 3)
             put(18, left + 1, '[f] Feed   [c] Clean   [s] Sleep/wake   [p] Play   [m] Medicine', 2)
-            put(19, left + 1, '[n] Name   [b] Character   [o] Show/hide pet   [v] Vacation', 2)
+            put(19, left + 1, '[n] Name [b] Look [h] Hatch [Tab] Next pet [o] Desktop [v] Away', 2)
             if h >= 27:
                 put(21, left + 1, s['message'][:width - 2], 0)
                 put(22, left + 1, 'Hardcore · death enabled' if s['hardcore'] else 'Gentle mode · your progress is always safe', 3)
         put(h - 3, left, ('◌ Working… ' if future else '› ') + message[:max(1, width - 13)], 3)
-        put(h - 2, left, '[g] Sync GitHub   [a] Arena/home   [r] Revive   [q] Quit', 1)
+        put(h - 2, left, '[k] Collection / exchange   [g] GitHub   [a] Arena   [r] Revive   [q] Quit', 1)
         if modal:
             # Centered modal overlays without a blocking input loop or network waits.
-            mw, mh = min(w - 4, 78), 17 if modal == 'character' else 8
+            mw, mh = min(w - 4, 78), min(h - 2, 19) if modal in ('character', 'hatch') else 8
             mx, my = (w - mw) // 2, max(0, (h - mh) // 2)
             for row in range(mh): put(my + row, mx, ' ' * mw)
-            box(my, mx, mh, mw, f'CHOOSE YOUR COMPANION · {len(CHARACTERS)}' if modal == 'character' else 'A NAME OF THEIR OWN')
-            if modal == 'character':
+            box(my, mx, mh, mw, f'CHOOSE YOUR COMPANION · {len(CHARACTERS)}' if modal in ('character', 'hatch') else 'A NAME OF THEIR OWN')
+            if modal in ('character', 'hatch'):
                 for i, (kind, (suggested, _, art)) in enumerate(CHARACTERS.items()):
                     col, row = i % 3, i // 3
-                    x, y = mx + 3 + col * ((mw - 4) // 3), my + 2 + row * 3
+                    x, y = mx + 3 + col * ((mw - 4) // 3), my + 2 + row * 2
                     label = 'Rubber duck' if kind == 'duck' else kind.title()
                     put(y, x, f'[{CHARACTER_KEYS[i]}] {label}' + (' ✓' if kind == s['character'] else ''), 2, True)
                     put(y + 1, x, thumbnail(kind)[:(mw - 4) // 3 - 2], pet_colors.get(kind, 4), True)
-                put(my + 15, mx + 3, '[0] Surprise me   [Esc] Back', 1)
+                put(my + mh - 2, mx + 3, '[0] Surprise me  [Esc] Back' + (' · Hatch a new pet' if modal == 'hatch' else ''), 1)
             else:
                 put(my + 2, mx + 3, 'What should we call your companion?', 0)
                 put(my + 4, mx + 3, '> ' + name_input + '▏', 2, True)
@@ -135,9 +164,13 @@ def dashboard(screen, worker):
         try:
             if modal:
                 if key == 27: modal = None
-                elif modal == 'character' and key in map(ord, '0' + CHARACTER_KEYS):
+                elif modal in ('character', 'hatch') and key in map(ord, '0' + CHARACTER_KEYS):
                     kind = 'random' if key == ord('0') else tuple(CHARACTERS)[CHARACTER_KEYS.index(chr(key))]
-                    with store() as state: choose(state, kind)
+                    with store() as state:
+                        if modal == 'hatch':
+                            from .collection import hatch
+                            hatch(state, kind)
+                        else: choose(state, kind)
                     message, modal = state['message'], None
                 elif modal == 'name':
                     if key in (10, 13):
@@ -148,6 +181,51 @@ def dashboard(screen, worker):
                     elif 32 <= key <= 126 and len(name_input) < 24: name_input += chr(key)
                 continue
             if key == ord('q'): return
+            if key == ord('k'):
+                collection_open = not collection_open
+                continue
+            if collection_open:
+                from . import collection
+                from .network import exchange
+                pets = s['pets']
+                selected = min(selected, len(pets) - 1)
+                if key == ord('e'): board_open = not board_open
+                elif key in (curses.KEY_UP, curses.KEY_DOWN):
+                    delta = -1 if key == curses.KEY_UP else 1
+                    if board_open: board_selected = max(0, min(board_selected + delta, len((board or {}).get('listings', [])) - 1))
+                    else: selected = max(0, min(selected + delta, len(pets) - 1))
+                elif board_open:
+                    offers = (board or {}).get('listings', [])
+                    if key == ord('g') and future is None: future = worker.submit(exchange, 'sync')
+                    elif offers and key in (10, 13, ord('x')) and future is None:
+                        item = offers[board_selected]
+                        if key == ord('x'): future = worker.submit(exchange, 'cancel', listing=item['id'])
+                        else:
+                            give = pets[selected]['id'] if item['mode'] == 'trade' else None
+                            future = worker.submit(exchange, 'claim', pet_id=give, listing=item['id'])
+                elif key == ord('h'): modal = 'hatch'
+                elif key in (10, 13):
+                    with store() as state: collection.switch(state, pets[selected]['id'])
+                    selected = 0
+                elif key in map(ord, 'oi'):
+                    from .desktop import configure, can_roam
+                    with store() as state:
+                        for pet in collection.all_pets(state):
+                            if key == ord('i') or can_roam(pet): configure(pet, 'roam', 'off' if key == ord('i') else 'on')
+                        state['overlay'] = True
+                elif key == ord('p'):
+                    with store() as state: collection.play_together(state, state['id'], pets[selected]['id'])
+                    message = state['message']
+                elif key == ord('f'):
+                    with store() as state: outcome = collection.spar(state, [state['id'], pets[selected]['id']])
+                    message = outcome['log'][-1]
+                elif key == ord('j') and future is None:
+                    from .network import request
+                    future = worker.submit(request, '/queue', team=[s['id'], pets[selected]['id']])
+                    collection_open, arena = False, True
+                elif key in map(ord, 'ut') and future is None:
+                    future = worker.submit(exchange, 'offer', pet_id=pets[selected]['id'], mode='adoption' if key == ord('u') else 'trade')
+                continue
             if key == ord('a'): arena = not arena; next_poll = 0
             elif arena and key == ord('d'):
                 from .simulator import play
@@ -170,6 +248,13 @@ def dashboard(screen, worker):
                     message = state['message']
                 elif key == ord('n'): modal, name_input = 'name', s['name']
                 elif key == ord('b'): modal = 'character'
+                elif key == ord('h'): modal = 'hatch'
+                elif key == 9:
+                    from .collection import switch, summaries
+                    with store() as state:
+                        pets = summaries(state)
+                        if len(pets) > 1: switch(state, pets[1]['id'])
+                    message = f"Caring for {state['name']} · {len(pets)} pets"
                 elif key == ord('o'):
                     with store() as state: state['overlay'] = not state['overlay']
                     message = 'Desktop pet ' + ('shown.' if state['overlay'] else 'hidden. Right-click the bar widget to bring it back.')

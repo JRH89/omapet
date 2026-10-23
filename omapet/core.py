@@ -57,7 +57,7 @@ def advance(s, now=None):
         hours -= dt
         s['food'] = clamp(s['food'] - dt * (1.3 if s['sleeping'] else 2.5))
         s['hygiene'] = clamp(s['hygiene'] - dt * 1.6)
-        s['joy'] = clamp(s['joy'] - dt * .8)
+        s['joy'] = clamp(s['joy'] - dt * 1.5)
         s['energy'] = clamp(s['energy'] + dt * (20 if s['sleeping'] else -1))
         danger = s['food'] < 10 or s['hygiene'] < 10 or s['energy'] < 5
         s['neglect'] = s['neglect'] + dt if danger else max(0, s['neglect'] - dt)
@@ -73,7 +73,10 @@ def advance(s, now=None):
         s['message'] = 'Feeling poorly. Clean up, feed me, and give me medicine.'
 
 
-def care(s, action):
+def care(s, action, now=None):
+    now = time.time() if now is None else now
+    before = {k: s[k] for k in ('food', 'energy', 'hygiene', 'joy', 'health')}
+    was_sick = s['sick']
     if action not in ACTIONS:
         raise ValueError('Unknown care action')
     if action == 'vacation':
@@ -116,8 +119,34 @@ def care(s, action):
         if s['food'] < 25 or s['hygiene'] < 40:
             raise ValueError('Feed and clean your pet before medicine')
         s.update(sick=False, neglect=0., health=clamp(s['health'] + 25), message='Feeling better!')
+    # Reward useful care, with a per-action cooldown and daily cap.
+    useful = ((action == 'feed' and before['food'] < 80) or
+              (action == 'clean' and before['hygiene'] < 80) or
+              (action == 'play' and before['joy'] < 90) or
+              (action == 'medicine' and (before['health'] < 80 or was_sick)))
+    day = time.strftime('%Y-%m-%d', time.gmtime(now))
+    rewards = s.setdefault('care_rewards', {'day': day, 'xp': 0, 'actions': {}})
+    if rewards['day'] != day:
+        rewards.update(day=day, xp=0)
+    previous = rewards['actions'].get(action, -1e20)
+    if useful and now - previous >= 1800:
+        gain = min(12, 120 - rewards['xp'])
+        s['xp'] += gain
+        rewards['xp'] += gain
+        rewards['actions'][action] = now
+        if gain: s['message'] += f' +{gain} care XP!'
+    if action == 'sleep' and not s.get('rest_started'):
+        s['rest_started'] = now
+    if action == 'wake':
+        started = s.pop('rest_started', now)
+        if now - started >= 3600 and now - rewards['actions'].get('rest', -1e20) >= 3600:
+            gain = min(12, 120 - rewards['xp'])
+            s['xp'] += gain
+            rewards['xp'] += gain
+            rewards['actions']['rest'] = now
+            if gain: s['message'] += f' +{gain} rest XP!'
     s['last_action'] = action
-    s['action_at'] = time.time()
+    s['action_at'] = now
 
 
 def apply_days(s, account, days, now=None):
@@ -145,16 +174,25 @@ def apply_days(s, account, days, now=None):
 def status(s):
     if s['dead']: return 'departed'
     if s['vacation']: return 'vacation'
-    if s['sleeping']: return 'sleeping'
     if s['sick']: return 'sick'
+    if s['sleeping']: return 'sleeping'
     if s['food'] < 25: return 'hungry'
     if s['energy'] < 25: return 'tired'
     if s['hygiene'] < 25: return 'messy'
+    if s['joy'] < 25: return 'sad'
+    if s['joy'] < 60: return 'lonely'
     return 'happy'
 
 
+def mood(s):
+    condition = status(s)
+    if condition in ('departed', 'sick', 'sleeping', 'vacation'): return condition
+    return 'sad' if s['joy'] < 25 else 'lonely' if s['joy'] < 60 else 'happy'
+
+
 def public(s):
-    return {**s, 'level': level(s), 'traits': traits(s), 'status': status(s), 'can_roam': can_roam(s), 'roam_block_reason': roam_block_reason(s)}
+    from .collection import summaries
+    return {**s, 'pets': summaries(s), 'mood': mood(s), 'level': level(s), 'traits': traits(s), 'status': status(s), 'can_roam': can_roam(s), 'roam_block_reason': roam_block_reason(s)}
 
 
 def atomic_json(path, value):
@@ -185,6 +223,9 @@ def store():
         s.setdefault('roaming', False)
         s.setdefault('cracks', [])
         s.setdefault('repairing_cracks', False)
+        for companion in s.get('companions', {}).values():
+            advance(companion)
+            if not can_roam(companion): companion['roaming'] = False
         advance(s)
         if not can_roam(s) and not s['cracks']: s['roaming'] = False
         yield s

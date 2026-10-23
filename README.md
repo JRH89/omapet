@@ -3,9 +3,9 @@
 A desktop companion for **Omarchy Quattro**. Care for a tiny pet, help it grow
 through GitHub contributions, and let it wander around your desktop.
 
-Choose from twelve characters, name your companion, and keep it close in a compact
-widget or terminal dashboard. GitHub activity earns experience; food, cleaning,
-sleep, and play are up to you. Vacation mode pauses care when you need a break.
+Choose from twenty characters, name your companion, and keep it close in a compact
+widget or terminal dashboard. Useful care and GitHub activity both earn experience. Collect companions,
+let them roam together, and exchange pets through your private arena. Vacation mode pauses care when you need a break.
 
 **Python 3.11+ · No pip dependencies · MIT licensed**
 
@@ -73,14 +73,17 @@ without this optional step.
 
 | Feature | How it works |
 | --- | --- |
-| Twelve companions | Cat, fox, bunny, frog, bear, owl, slime, robot, penguin, snake, gopher, or rubber duck. Randomly assigned or chosen in the TUI. |
+| Twenty companions | Twelve original pets plus octocat, Android, Rust crab, Docker whale, PostgreSQL elephant, Perl camel, Gradle beaver, and a bug. |
+| Pet collection | Keep up to 24 pets with separate names, needs, levels, and training. Press **k** in the TUI. |
+| Adoption and trading | List pets on a connected private arena. Adopt for free or exchange pets; XP and trained stats travel with them. |
 | Everyday care | Feed, clean, play, rest, and treat sickness. Animated snacks and bubbles confirm actions. |
 | Compact or detailed | One row of icon buttons, or care meters, combat traits, XP, and GitHub activity. |
 | Desktop adventures | Let your pet out and click it to bring it home. Optional surprise escapes happen while it is awake and healthy. |
 | Time off | Vacation freezes care needs. Gentle mode prevents death; hardcore mode is opt-in. |
-| Friendly battles | Connect to a private TUI arena for turn-based sparring and capped XP rewards. |
+| Friendly battles | Local 1v1/2v2 sparring and online battles with one or two pets per player. Online rewards are capped. |
+| Care progression and moods | Useful care earns XP; low joy causes loneliness and sadness with visible expressions. |
 
-![All twelve Omapet characters in their pixel style](docs/screenshots/characters.png)
+![All twenty Omapet characters in their pixel style](docs/screenshots/characters.png)
 
 GitHub contributions build different strengths:
 
@@ -110,7 +113,8 @@ GitHub token or send it to an arena server. Sync is manual by default.
 | **n** | Rename | **b** | Choose character |
 | **o** | Show / hide pet | **v** | Vacation |
 | **a** | Home / arena | **r** | Revive |
-| **q** | Quit | | |
+| **k** | Collection / exchange | **h** | Hatch a pet |
+| **Tab** | Next pet | **q** | Quit |
 
 - [Care, progression, characters, roaming, and optional hourly sync](docs/GUIDE.md)
 - Try offline battles with `omapet arena demo`, or press **d** in the TUI Arena. No pet stats change.
@@ -135,6 +139,8 @@ service. See the arena guide before hosting it outside a trusted network.
 omarchy plugin update jrh89.omapet
 omarchy plugin remove jrh89.omapet
 ```
+
+Existing single-pet saves migrate automatically when you add a companion.
 
 Progress and preferences stay in `$XDG_DATA_HOME/omapet` (normally
 `~/.local/share/omapet`). Use `OMAPET_HOME` for a separate pet or test instance.

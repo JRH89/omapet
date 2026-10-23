@@ -116,11 +116,19 @@ PORTRAITS = {
 }
 
 
+from .characters import CHARACTERS
+for _kind, (_, _, _art) in CHARACTERS.items():
+    if _kind not in PORTRAITS:
+        PORTRAITS[_kind] = ('',) + tuple(row.replace('o', '@') for row in _art) + ('',)
+
+
 def portrait(character, mood='happy', frame=0):
     if mood in ('sick', 'departed'):
         eye = 'x'
     elif mood == 'sleeping' or frame % 40 >= 38:
         eye = '-'
+    elif mood in ('sad', 'lonely', 'tired'):
+        eye = ';' if mood == 'sad' else '~'
     elif mood == 'eating':
         eye = '^'
     else:

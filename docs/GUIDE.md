@@ -52,22 +52,102 @@ omapet desktop roam on           # off brings him home
 omapet desktop escapes off       # disable surprise escapes
 ```
 
-## Twelve companions, your choice
+## Twenty companions, your choice
 
 New pets are randomly assigned a cat, fox, bunny, frog, bear, owl, slime, robot, penguin, snake, gopher, or rubber duck.
 Existing pets receive a character once on migration; their name and progress are
 preserved. Each has its own desktop silhouette and terminal portrait.
 Press **b** in the TUI, choose **1–9**, **s** for snake, **g** for gopher, **d** for duck, or **0** for a surprise. Press **n** to rename.
-Changing characters is cosmetic and keeps all stats and progress.
+Changing characters is cosmetic and keeps all stats and progress. Eight more developer-themed
+companions are available: octocat, Android robot, Rust crab, Docker whale, PostgreSQL
+elephant, Perl camel, Gradle beaver, and a bug. The picker shows every shortcut.
 
 ```sh
 omapet character fox      # or cat, bunny, frog, bear, owl, slime, robot, penguin, snake, gopher, duck, random
 omapet name Fern
 ```
 
+## Your household, adoption, and trading
+
+Press **k** in the TUI for your collection. Use the arrows to select a pet and
+**Enter** to care for it. **h** opens the new-pet picker; **Tab** on Home cycles pets.
+Each of up to 24 pets has its own needs, XP and contribution-trained traits. All
+pets age while they are at home, including companions you are not viewing. Use
+vacation on an individual pet to pause its needs. Existing saves keep their pet.
+GitHub identity and contribution high-water marks belong to the household, so
+switching pets cannot reward the same contribution twice.
+
+Detailed desktop view has **Next pet**, **Hatch**, and **All out** buttons. All out
+releases every eligible pet on the current screen. Click a companion to send it
+home; right-click it to select it. The active pet keeps its original roaming and
+screen-mess behavior. In the collection, **o** releases pets and **i** brings them home
+(after repairing any active-pet messes).
+
+Select a different pet from the active one and press **p** to play together or
+**f** for an automatic friendly 1v1 spar. Local spars use real combat rules, spend
+10 energy per participant, and grant no XP or injuries. For a local 2v2, supply
+four IDs: the first two form one team, and the last two form the other.
+
+```sh
+omapet pets list
+omapet pets hatch crab --name Ferris
+omapet pets switch PET_ID
+omapet care feed --pet PET_ID
+omapet pets roam on                  # all eligible pets
+omapet pets play FIRST_ID SECOND_ID
+omapet pets spar FIRST_ID SECOND_ID
+omapet pets spar A_ID B_ID C_ID D_ID
+omapet arena queue --team FIRST_ID SECOND_ID
+```
+
+Online 2v2 uses **two pets per player**. The collection's **j** key queues the active
+and selected pet; select a different pet first. You match against another two-pet
+team. One hidden strike/guard/feint command controls your team each round. Each
+surviving pet attacks; the front pet absorbs damage before its teammate. Knocked-out
+pets stop attacking. Both participating pets receive the usual online XP reward;
+the five rewarded matches per UTC day cap applies to the whole household.
+
+Connect to a private arena with `omapet arena connect URL`. In your collection,
+**u** offers the selected pet for free adoption and **t** offers it for an open trade.
+An open trade accepts any living pet in return, including a lower-level pet.
+**e** opens the exchange board; **g** refreshes offers and collects deliveries.
+**Enter** adopts a free pet, or trades your selected household pet for a trade offer.
+**x** cancels your own selected offer. Keep at least one pet at home.
+
+```sh
+omapet pets offer PET_ID                    # free adoption
+omapet pets offer PET_ID --mode trade       # accepts any living pet
+omapet pets board
+omapet pets claim LISTING_ID                # free adoption
+omapet pets claim LISTING_ID --pet MY_ID     # exchange your pet for a trade offer
+omapet pets cancel LISTING_ID
+omapet pets sync                            # collect arrivals / retry interrupted transfers
+```
+
+Offers move pets into server escrow until adopted, traded, or cancelled. Escrow
+pauses their needs. Names, characters, XP, trained totals, and care meters transfer;
+GitHub identities, contribution histories, desktop settings and arena credentials
+stay private. The new owner can train the pet with their own GitHub account.
+After a connection interruption, run **pets sync** before making another transfer.
+The transfer journal and server operation receipts make retries idempotent.
+If your household fills up, deliveries wait on the server until you make room.
+Back up both the local pet save and arena identity file; the server's arena save
+contains outstanding offers and deliveries. Both client and server must be updated
+for exchange and team features. This remains a casual, trusted-group system with
+client-supplied progress, rather than a cheat-resistant economy.
+
 ## Progress that makes sense
 
-GitHub activity builds training experience; it does not replace food or sleep.
+Useful feeding, cleaning, play, medicine and a completed hour of sleep each earn
+12 XP, up to 120 care XP per pet per UTC day. Each care action has a 30-minute
+reward cooldown; sleep must last at least an hour, with at least an hour between
+rest rewards. Medicine for an already healthy pet and cleaning an already-clean pet earn no XP.
+Care levels improve every combat trait through the existing level bonus. GitHub
+activity adds training experience and specialized traits.
+
+Joy falls by 1.5 per hour. Below 60, your pet feels lonely; below 25, it feels sad.
+Play restores joy. The sprite expresses these moods even when hunger is the main
+status; sickness is visible even when a sick pet is sleeping.
 
 | Contribution | Trait | XP each | Reward cap / UTC day | Reason |
 | --- | --- | ---: | ---: | --- |

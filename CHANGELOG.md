@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Add a household of up to 24 individually saved pets, hatching, switching, care
+  targeting, play together, and multiple roaming desktop companions.
+- Add private-arena adoption and open trades with escrow, durable transfer retries,
+  delivery acknowledgements, and preservation of XP and trained stats.
+- Add local 1v1/2v2 spars and online two-pet teams with individual knockout HP;
+  battle reward limits and GitHub contribution ledgers follow the household.
+- Reward useful care and real rest with capped XP. Add loneliness, sadness and
+  visible mood expressions; show sickness even while sleeping.
+- Add octocat, Android, crab, whale, elephant, camel, beaver and bug companions,
+  with distinct desktop sprites and terminal portraits.
+
 - Add offline CPU sparring (`omapet arena demo`, or **d** in Arena) with portraits,
   HP, hidden choices, round results, and rematches using the real battle rules.
   Practice never changes pet progress or the saved server connection.

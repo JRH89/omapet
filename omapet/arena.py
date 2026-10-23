@@ -38,6 +38,15 @@ class Arena:
                     raise ValueError('Pet name must be 1–24 printable characters')
                 if not isinstance(body.get('invite'), str): raise ValueError('Invalid invitation')
             if route == '/queue':
+                team = body.get('team')
+                if team is not None:
+                    if not isinstance(team, list) or len(team) not in (1, 2): raise ValueError('Choose one or two pets')
+                    for member in team:
+                        if not isinstance(member, dict) or not isinstance(member.get('name'), str) or not member['name'].isprintable() or not 1 <= len(member['name']) <= 24: raise ValueError('Invalid team member')
+                        member_stats = member.get('traits')
+                        if not isinstance(member_stats, dict): raise ValueError('Invalid team traits')
+                        for value in member_stats.values():
+                            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value): raise ValueError('Invalid team traits')
                 stats = body.get('traits', {})
                 if not isinstance(stats, dict): raise ValueError('Invalid traits')
                 for key in ('strength', 'stamina', 'agility', 'defense'):
@@ -62,6 +71,11 @@ class Arena:
                 raise ValueError('Unknown arena identity; register first')
             p = players[key]
             p['last'] = time.time()
+            if route.startswith('/exchange/'):
+                from .exchange import request
+                result = request(self.data, key, route, body)
+                self.save()
+                return result
             # Reap inactive queue entries; abandoned matches time out and grant no reward.
             for m in self.data['matches'].values():
                 if m['winner'] is None and time.time() - m['updated'] > 300:
@@ -78,8 +92,11 @@ class Arena:
                 stats = body.get('traits', {})
                 p['traits'] = {k: max(10, min(60, int(stats.get(k, 10))))
                                for k in ('strength', 'stamina', 'agility', 'defense')}
+                team = body.get('team') or [{'name': p['name'], 'traits': p['traits']}]
+                p['team'] = [dict(name=t['name'], traits={k: max(10, min(60, int(t['traits'].get(k, 10)))) for k in p['traits']}) for t in team]
                 p['queued'], p['match'] = True, None
                 other = next((k for k, v in players.items() if k != key and v['queued']
+                              and len(v.get('team', [None])) == len(p['team'])
                               and time.time() - v['last'] < 120), None)
                 if other:
                     mid = secrets.token_hex(12)
@@ -87,6 +104,10 @@ class Arena:
                     self.data['matches'][mid] = dict(completed=False, id=mid, players=ids, names={k: players[k]['name'] for k in ids},
                         hp={k: 80 + players[k]['traits']['stamina'] for k in ids},
                         moves={}, round=1, winner=None, log=['A friendly spar begins!'], updated=time.time())
+                    match = self.data['matches'][mid]
+                    match['fighters'] = {k: [dict(name=t['name'], traits=t['traits'], hp=80+t['traits']['stamina'], max_hp=80+t['traits']['stamina']) for t in players[k].get('team', [{'name': players[k]['name'], 'traits': players[k]['traits']}])] for k in ids}
+                    match['hp'] = {k: sum(t['hp'] for t in match['fighters'][k]) for k in ids}
+                    match['max_hp'] = dict(match['hp'])
                     for k in ids:
                         players[k].update(queued=False, match=mid)
             elif route == '/leave':
@@ -110,11 +131,17 @@ class Arena:
                     for attacker in m['players']:
                         defender = next(k for k in m['players'] if k != attacker)
                         a, d = m['moves'][attacker], m['moves'][defender]
-                        stats, target = players[attacker]['traits'], players[defender]['traits']
-                        power = stats['agility'] if a == 'feint' else stats['strength']
-                        amount = max(3, 8 + power // 5 - target['defense'] // 10)
-                        damage[defender] = amount + (8 if BEATS[a] == d else 0)
-                    for k, amount in damage.items(): m['hp'][k] = max(0, m['hp'][k] - amount)
+                        fighters = m.get('fighters')
+                        attackers = [t['traits'] for t in fighters[attacker] if t['hp'] > 0] if fighters else [players[attacker]['traits']]
+                        target = next(t['traits'] for t in fighters[defender] if t['hp'] > 0) if fighters else players[defender]['traits']
+                        damage[defender] = sum(max(3, 8 + stats['agility' if a == 'feint' else 'strength'] // 5 - target['defense'] // 10) + (8 if BEATS[a] == d else 0) for stats in attackers)
+                    for k, amount in damage.items():
+                        m['hp'][k] = max(0, m['hp'][k] - amount)
+                        if m.get('fighters'):
+                            for fighter in m['fighters'][k]:
+                                hit = min(fighter['hp'], amount)
+                                fighter['hp'] -= hit
+                                amount -= hit
                     a, b = m['players']
                     m['log'].append(f"Round {m['round']}: {players[a]['name']} {m['moves'][a]} / {players[b]['name']} {m['moves'][b]} · HP {m['hp'][a]}:{m['hp'][b]}")
                     m['round'] += 1
@@ -224,7 +251,8 @@ def handler(arena, trust_cloudflare=False):
             else: self.respond(404, {'error': 'Not found'})
 
         def do_POST(self):
-            if self.path not in ('/register', '/status', '/queue', '/leave', '/move'):
+            if self.path not in ('/register', '/status', '/queue', '/leave', '/move',
+                                 '/exchange/list', '/exchange/offer', '/exchange/claim', '/exchange/cancel', '/exchange/ack'):
                 self.respond(404, {'error': 'Not found'}); return
             if not limits.allow(self.peer(), self.path == '/register'):
                 self.respond(429, {'error': 'Too many requests; try again shortly'}); return

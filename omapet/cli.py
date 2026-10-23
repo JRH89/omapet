@@ -14,7 +14,7 @@ def main():
     saver.add_argument('action', choices=['preview', 'run', 'enable', 'disable', 'snapshot'], default='preview', nargs='?')
     st = sub.add_parser('status'); st.add_argument('--json', action='store_true')
     sub.add_parser('waybar', help='Print a Waybar JSON update')
-    act = sub.add_parser('care'); act.add_argument('action', choices=ACTIONS)
+    act = sub.add_parser('care'); act.add_argument('action', choices=ACTIONS); act.add_argument('--pet')
     sub.add_parser('sync', help='Sync seven days of contributions using gh authentication')
     name = sub.add_parser('name'); name.add_argument('name')
     character = sub.add_parser('character'); character.add_argument('character', choices=[*CHARACTERS, 'random'])
@@ -30,10 +30,23 @@ def main():
     hit.add_argument('x', type=float); hit.add_argument('y', type=float); hit.add_argument('--screen', default='')
     fix = sub.add_parser('repair', help='Repair one screen crack, or all for keyboard access')
     fix.add_argument('crack_id')
+    pets = sub.add_parser('pets', help='Collect, adopt, trade and play with pets')
+    ps = pets.add_subparsers(dest='action', required=True)
+    ps.add_parser('list')
+    hatch = ps.add_parser('hatch'); hatch.add_argument('character', choices=[*CHARACTERS, 'random']); hatch.add_argument('--name')
+    select = ps.add_parser('switch'); select.add_argument('pet')
+    for command in ('play', 'spar'):
+        pair = ps.add_parser(command); pair.add_argument('ids', nargs='+')
+    roam = ps.add_parser('roam'); roam.add_argument('mode', choices=['on', 'off']); roam.add_argument('--pet', default='all')
+    offer = ps.add_parser('offer'); offer.add_argument('pet'); offer.add_argument('--mode', choices=['adoption', 'trade'], default='adoption')
+    claim = ps.add_parser('claim'); claim.add_argument('listing'); claim.add_argument('--pet', help='Pet to give in return for a trade')
+    cancel = ps.add_parser('cancel'); cancel.add_argument('listing')
+    ps.add_parser('board'); ps.add_parser('sync')
     arena = sub.add_parser('arena'); arena_sub = arena.add_subparsers(dest='action')
     arena_sub.add_parser('demo', help='Offline practice battle against a CPU; no pet changes')
     conn = arena_sub.add_parser('connect'); conn.add_argument('url')
     for cmd in ('status', 'queue', 'leave'): arena_sub.add_parser(cmd)
+    arena_sub.choices['queue'].add_argument('--team', nargs='+', help='One or two pet IDs (2v2 with two)')
     move = arena_sub.add_parser('move'); move.add_argument('move', choices=['strike', 'guard', 'feint'])
     args = p.parse_args()
     try:
@@ -60,10 +73,34 @@ def main():
                 network.connect(args.url, getpass.getpass('Arena invitation: '))
                 print('Connected. Open omapet and press a to enter the arena.')
             else:
-                print(json.dumps(network.request('/' + (args.action or 'status'), getattr(args, 'move', None)), indent=2))
+                print(json.dumps(network.request('/' + (args.action or 'status'), getattr(args, 'move', None), team=getattr(args, 'team', None)), indent=2))
+            return
+        if args.command == 'pets' and args.action in ('offer', 'claim', 'cancel', 'board', 'sync'):
+            from .network import exchange
+            print(json.dumps(exchange('list' if args.action == 'board' else args.action,
+                  pet_id=getattr(args, 'pet', None), listing=getattr(args, 'listing', None),
+                  mode=getattr(args, 'mode', 'adoption')), indent=2))
             return
         with store() as s:
-            if args.command == 'care': care(s, args.action)
+            if args.command == 'pets':
+                from . import collection
+                if s.get('exchange_pending') and args.action != 'list': raise ValueError('Run omapet pets sync to finish your pending transfer first')
+                if args.action == 'list':
+                    print(json.dumps(collection.summaries(s), indent=2)); return
+                if args.action == 'hatch': collection.hatch(s, args.character, args.name)
+                elif args.action == 'switch': collection.switch(s, args.pet)
+                elif args.action == 'play':
+                    if len(args.ids) != 2: raise ValueError('Choose two pet IDs')
+                    collection.play_together(s, *args.ids)
+                elif args.action == 'spar': print(json.dumps(collection.spar(s, args.ids), indent=2)); return
+                elif args.action == 'roam':
+                    from .desktop import configure
+                    for pet in collection.all_pets(s) if args.pet == 'all' else [collection.find(s, args.pet)]:
+                        if args.mode == 'off' or public(pet)['can_roam']: configure(pet, 'roam', args.mode)
+                    s['overlay'] = True
+            elif args.command == 'care':
+                from .collection import find
+                care(find(s, args.pet) if args.pet else s, args.action)
             elif args.command == 'name':
                 rename(s, args.name)
             elif args.command == 'character': choose(s, args.character)

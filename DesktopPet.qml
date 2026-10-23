@@ -93,6 +93,17 @@ Item {
             }
         }
     }
+    Variants {
+        model: (root.model.pet.pets || []).filter(p => !p.active && p.roaming)
+        delegate: Component {
+            CompanionPet {
+                required property var modelData
+                pet: modelData
+                petModel: root.model
+                targetScreen: root.selectedScreen
+            }
+        }
+    }
     onRoamingChanged: {
         if (roaming) {
             roamX = habitat.margins.left
@@ -168,7 +179,7 @@ Item {
                 PetSprite {
                     anchors.horizontalCenter: parent.horizontalCenter
                     implicitWidth: root.detailed ? 124 : 96; implicitHeight: root.detailed ? 100 : 76
-                    mood: root.model.pet.status; character: root.model.pet.character || "cat"; effect: root.model.effect
+                    mood: root.model.pet.mood || root.model.pet.status; character: root.model.pet.character || "cat"; effect: root.model.effect
                     PetDragArea { anchors.fill: parent; desktop: root; onTapped: root.model.act("feed") }
                 }
                 Text { visible: root.detailed; anchors.horizontalCenter: parent.horizontalCenter; text: root.model.pet.name + " · L" + root.model.pet.level; color: "#d8f3e3"; font.pixelSize: 15; font.bold: true }
@@ -232,6 +243,13 @@ Item {
                     PetButton { width: 111; text: root.detailed ? "Simple view" : "Detailed view"; onClicked: root.model.desktop("view", "toggle") }
                     PetButton { width: 111; text: "Let out ↗"; hint: root.roamHint; available: root.model.pet.can_roam === true; onClicked: root.release() }
                 }
+                Row {
+                    visible: root.detailed
+                    anchors.horizontalCenter: parent.horizontalCenter; spacing: 6
+                    PetButton { text: "Next pet"; hint: "Switch the companion you are caring for"; onClicked: { let pets = root.model.pet.pets || []; if (pets.length > 1) root.model.run(["pets", "switch", pets[1].id]) } }
+                    PetButton { text: "Hatch"; hint: "Add a random companion to your collection"; onClicked: root.model.run(["pets", "hatch", "random"]) }
+                    PetButton { text: "All out"; hint: "Let all healthy pets roam together"; onClicked: root.model.run(["pets", "roam", "on"]) }
+                }
                 PetButton {
                     visible: root.detailed; width: parent.width; height: 23
                     text: "Surprise escapes: " + (root.model.pet.escapes === false ? "off" : "on")
@@ -266,7 +284,7 @@ Item {
             PetSprite {
                 id: runner
                 anchors.horizontalCenter: parent.horizontalCenter
-                mood: root.model.pet.status; character: root.model.pet.character || "cat"
+                mood: root.model.pet.mood || root.model.pet.status; character: root.model.pet.character || "cat"
                 effect: root.bonking ? "bonk" : root.model.pet.can_roam ? "run" : ""
                 transform: Scale { origin.x: runner.width / 2; xScale: root.velocityX > 0 ? -1 : 1 }
             }
