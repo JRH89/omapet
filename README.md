@@ -82,7 +82,7 @@ submission; see [publishing status and instructions](PUBLISHING.md).
 - Optional **Waybar** for the JSON adapter, or a private server for arena battles.
 
 You can care for your pet offline. GitHub authentication is only needed when you
-choose to sync contributions. There is no telemetry or required hosted backend.
+open the TUI or desktop widget to sync contributions. There is no telemetry or required hosted backend.
 
 ### Optional terminal command
 
@@ -175,7 +175,9 @@ always come from care, and taking time off GitHub does not directly harm your pe
 
 To enable GitHub XP, install GitHub CLI if needed, run `gh auth login`, then press
 **g** in the TUI. Omapet uses that existing authentication and does not save the
-GitHub token or send it to an arena server. Sync is manual by default.
+GitHub token or send it to an arena server. Sync runs automatically when the TUI or widget opens and when you show the desktop pet.
+Startup syncs share a 60-second cooldown; **g** still forces a manual sync.
+Missing authentication or an offline connection never blocks care.
 
 ## Controls and guides
 
@@ -193,6 +195,7 @@ GitHub token or send it to an arena server. Sync is manual by default.
 - [Care, progression, characters, roaming, and optional hourly sync](docs/GUIDE.md)
 - Try offline battles with `omapet arena demo`, or press **d** in the TUI Arena. No pet stats change.
 - [Arena welcome page](https://arena.codefrontlabs.com) — invite-only pilot and join instructions.
+- [Changelog](CHANGELOG.md) — new features, fixes, and release history.
 - [Private arena setup and battle rules](docs/ARENA.md)
 - [Hosting, backups, and tunnel isolation](docs/HOSTING.md)
 - [Development, local installation, testing, and release archives](docs/DEVELOPMENT.md)

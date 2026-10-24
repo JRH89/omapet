@@ -1,7 +1,7 @@
 import curses
 import time
 from concurrent.futures import ThreadPoolExecutor
-from .core import store, public, care, apply_days
+from .core import store, public, care
 from .characters import CHARACTERS, CHARACTER_KEYS, choose, rename
 from .portraits import portrait, thumbnail, terminal_color
 
@@ -27,6 +27,8 @@ def dashboard(screen, worker):
     future, arena, result, next_poll = None, False, None, 0
     modal, name_input = None, ''
     collection_open, board_open, selected, board_selected, board = False, False, 0, 0, None
+    from .github import start_auto_sync
+    startup_sync = start_auto_sync()
 
     def put(y, x, text, color=0, bold=False):
         h, w = screen.getmaxyx()
@@ -44,12 +46,14 @@ def dashboard(screen, worker):
 
     while True:
         with store() as state: s = public(state)
+        if startup_sync is not None and startup_sync.poll() is not None:
+            startup_sync = None
+            message = s['message']
         if future and future.done():
             try:
                 value = future.result()
-                if isinstance(value, tuple):
-                    with store() as state: apply_days(state, *value)
-                    message = state['message']
+                if isinstance(value, str):
+                    message = value
                 elif isinstance(value, dict):
                     if 'listings' in value:
                         board = value
@@ -259,6 +263,6 @@ def dashboard(screen, worker):
                     with store() as state: state['overlay'] = not state['overlay']
                     message = 'Desktop pet ' + ('shown.' if state['overlay'] else 'hidden. Right-click the bar widget to bring it back.')
                 elif key == ord('g') and future is None:
-                    from .github import collect
-                    future = worker.submit(collect)
+                    from .github import sync
+                    future = worker.submit(sync)
         except (ValueError, OSError) as e: message = str(e)

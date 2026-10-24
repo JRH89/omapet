@@ -28,6 +28,16 @@ User-owned plugin files can be edited under `~/.config/omarchy/plugins/jrh89.oma
 Never edit system-owned Omarchy files. Quickshell may retain QML types in its cache;
 use `omarchy restart shell` if hot reload does not display a code change.
 
+## Main branch ownership
+
+`main` has an active GitHub ruleset restricting updates to the repository owner,
+**JRH89**. Only that account can push directly or merge a branch into `main`;
+contributors should push feature branches or forks and open pull requests.
+The ruleset uses an explicit user bypass, not a blanket administrator/team/app
+bypass. [View the main ruleset](https://github.com/JRH89/omapet/rules/25761411).
+Keep changes documented in [CHANGELOG.md](../CHANGELOG.md); the README and arena
+landing page link to it.
+
 ## Verify changes
 
 ```sh

@@ -149,7 +149,8 @@ def care(s, action, now=None):
     s['action_at'] = now
 
 
-def apply_days(s, account, days, now=None):
+def apply_days(s, account, days, now=None, pet=None):
+    pet = s if pet is None else pet
     if s['account'] and s['account'].lower() != account.lower():
         raise ValueError('This pet is bonded to another GitHub account; use a separate OMAPET_HOME')
     gained = 0
@@ -158,16 +159,19 @@ def apply_days(s, account, days, now=None):
         for k in KINDS:
             count = min(CAPS[k], max(0, int(counts.get(k, 0))))
             delta = max(0, count - previous[k])
-            s['totals'][k] += delta
+            pet['totals'][k] += delta
             gained += delta * WEIGHTS[k]
             previous[k] = max(previous[k], count)
     active = [day for day, counts in days.items() if any(counts.get(k, 0) for k in KINDS)]
     if active:
         s['last_active'] = max(s.get('last_active') or '', max(active))
     s['account'] = account
-    s['xp'] += gained
+    pet['xp'] += gained
     s['synced'] = now or time.time()
     s['message'] = f'GitHub synced: +{gained} XP. Every kind of contribution matters.'
+    if pet is not s:
+        s['message'] = f"GitHub synced for {pet['name']}: +{gained} XP."
+        pet['message'] = s['message']
     return gained
 
 

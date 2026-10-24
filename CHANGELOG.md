@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Automatically sync GitHub in the background on TUI/widget startup and desktop
+  reveal, with a shared 60-second cooldown and overlap prevention. Keep care
+  usable offline and assign XP to the pet selected when the sync began.
+- Link the public arena landing page and README to this changelog.
+- Protect `main` with an active owner-only update ruleset; only JRH89 can push
+  or merge into it.
+
 - Let household pets train each other for 20 XP per participant in their first
   five local spars per UTC day, with persistent limits across switches and trades.
   Show XP and level-ups in 1v1/2v2 results; keep energy costs and no injuries.

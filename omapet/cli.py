@@ -3,7 +3,7 @@ import getpass
 import json
 import sys
 from .characters import CHARACTERS, CHARACTER_ICONS, choose, rename
-from .core import ACTIONS, store, public, apply_days, care, status, level
+from .core import ACTIONS, store, public, care, status, level
 
 
 def main():
@@ -15,7 +15,8 @@ def main():
     st = sub.add_parser('status'); st.add_argument('--json', action='store_true')
     sub.add_parser('waybar', help='Print a Waybar JSON update')
     act = sub.add_parser('care'); act.add_argument('action', choices=ACTIONS); act.add_argument('--pet')
-    sub.add_parser('sync', help='Sync seven days of contributions using gh authentication')
+    sync = sub.add_parser('sync', help='Sync seven days of contributions using gh authentication')
+    sync.add_argument('--auto', action='store_true', help='Quiet startup sync; skip overlapping or recent requests')
     name = sub.add_parser('name'); name.add_argument('name')
     character = sub.add_parser('character'); character.add_argument('character', choices=[*CHARACTERS, 'random'])
     hard = sub.add_parser('hardcore'); hard.add_argument('mode', choices=['on', 'off'])
@@ -60,10 +61,10 @@ def main():
             else: screensaver.run(preview=args.action == 'preview')
             return
         if args.command == 'sync':
-            from .github import collect
-            account, days = collect()
-            with store() as s: apply_days(s, account, days)
-            print(s['message']); return
+            from .github import sync
+            message = sync(auto=args.auto)
+            if message: print(message)
+            return
         if args.command == 'arena':
             if args.action == 'demo':
                 from .simulator import run

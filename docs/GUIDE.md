@@ -168,8 +168,9 @@ status; sickness is visible even when a sick pet is sleeping.
 Each sync reads seven UTC days, including today, from GitHub's GraphQL
 `viewer.contributionsCollection`. First sync grants the same capped seven-day
 welcome training. Historical daily high-water marks prevent double rewards when
-resyncing, deleting contributions, or crossing a date boundary. Each pet bonds to
-one GitHub login; switching accounts requires a separate `OMAPET_HOME`.
+resyncing, deleting contributions, or crossing a date boundary. Each household bonds to
+one GitHub login; switching accounts requires a separate `OMAPET_HOME`. Sync rewards
+the pet active when the request starts, even if you switch companions while it runs.
 
 Level is `1 + floor(sqrt(XP / 100))`. Each trait starts at `8 + 2 × level`, plus
 `min(30, floor(2 × sqrt(rewarded contributions of that type)))`. This makes your
@@ -214,7 +215,16 @@ State lives in `$XDG_DATA_HOME/omapet/pet.json` (normally
 Use `OMAPET_HOME=/another/folder` for a separate pet or demo. Arena client credentials
 are stored separately with mode 0600. Pet data is retained when the plugin is removed.
 
-GitHub sync is explicit by default. To opt into hourly updates after authenticating:
+GitHub sync runs automatically when the TUI starts, when the bar widget loads,
+and whenever you show the desktop pet. It uses your existing `gh` login in the
+background, without an authentication prompt. Startup requests from both interfaces
+share a lock and a 60-second cooldown, so simultaneous opens or rapid hide/show
+cycles do not repeatedly call GitHub. Care stays responsive while syncing and
+when offline; failed automatic attempts are quiet. Run `gh auth login` once to
+enable contribution XP, and press **g** or run `omapet sync` to retry manually
+without waiting for the cooldown. Ordinary status polling never syncs.
+
+To also opt into hourly updates while no interface is open:
 
 ```sh
 mkdir -p ~/.config/systemd/user
