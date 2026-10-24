@@ -12,7 +12,7 @@ check()
 version = json.loads((ROOT / 'manifest.json').read_text())['version']
 root_files = ['manifest.json', 'pyproject.toml', 'README.md', 'LICENSE', 'CHANGELOG.md',
               'PUBLISHING.md', 'preview.png', '.gitignore']
-files = [ROOT / f for f in root_files] + list(ROOT.glob('*.qml'))
+files = [ROOT / f for f in root_files] + list(ROOT.glob('*.qml')) + list(ROOT.glob('*.js'))
 allowed = {'.py', '.qml', '.md', '.png', '.jsonc', '.css', '.service', '.timer', '.yml'}
 for directory in ('omapet', 'scripts', 'integrations', 'docs', 'tests', '.github'):
     files.extend(p for p in (ROOT / directory).rglob('*') if p.is_file() and (p.suffix in allowed or p.name == 'Dockerfile')

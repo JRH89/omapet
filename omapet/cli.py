@@ -29,6 +29,9 @@ def main():
     hit = sub.add_parser('bonk', help='Record an on-screen roaming impact')
     hit.add_argument('--kind', choices=['crack', 'poop'], default='crack')
     hit.add_argument('x', type=float); hit.add_argument('y', type=float); hit.add_argument('--screen', default='')
+    team = sub.add_parser('team-bonk', help='Record a coordinated cosmetic screen bonk')
+    team.add_argument('x', type=float); team.add_argument('y', type=float)
+    team.add_argument('--pets', nargs='+', required=True); team.add_argument('--screen', default='')
     fix = sub.add_parser('repair', help='Repair one screen crack, or all for keyboard access')
     fix.add_argument('crack_id')
     pets = sub.add_parser('pets', help='Collect, adopt, trade and play with pets')
@@ -95,10 +98,7 @@ def main():
                     collection.play_together(s, *args.ids)
                 elif args.action == 'spar': print(json.dumps(collection.spar(s, args.ids), indent=2)); return
                 elif args.action == 'roam':
-                    from .desktop import configure
-                    for pet in collection.all_pets(s) if args.pet == 'all' else [collection.find(s, args.pet)]:
-                        if args.mode == 'off' or public(pet)['can_roam']: configure(pet, 'roam', args.mode)
-                    s['overlay'] = True
+                    collection.roam(s, args.mode, args.pet)
             elif args.command == 'care':
                 from .collection import find
                 care(find(s, args.pet) if args.pet else s, args.action)
@@ -112,6 +112,9 @@ def main():
             elif args.command == 'bonk':
                 from .desktop import bonk
                 bonk(s, args.x, args.y, args.screen, kind=args.kind)
+            elif args.command == 'team-bonk':
+                from .desktop import team_bonk
+                team_bonk(s, args.pets, args.x, args.y, args.screen)
             elif args.command == 'repair':
                 from .desktop import repair
                 repair(s, args.crack_id)

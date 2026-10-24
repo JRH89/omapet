@@ -2,6 +2,7 @@
 import QtQuick
 import QtTest
 import ".." as Pet
+import "../Playground.js" as Games
 
 Rectangle {
     id: scene
@@ -9,14 +10,14 @@ Rectangle {
     color: "#111e27"
     property int mode: 0
     property string outputDirectory: ""
-    readonly property var headings: ["A little freedom.", "One tiny pet. One big bonk.", "Well… that happened.", "Meet the new developers."]
-    readonly property var subtitles: ["Let one companion out, or let the whole household roam.", "Pretend screen cracks. Real cleanup duty.", "Pixel poop happens. Click Clean up to put things right.", "Eight more companions, each with its own silhouette and palette."]
+    readonly property var headings: ["A little freedom.", "One tiny pet. One big bonk.", "Well… that happened.", "Meet the new developers.", "Better together."]
+    readonly property var subtitles: ["Let one companion out, or let the whole household roam.", "Pretend screen cracks. Real cleanup duty.", "Pixel poop happens. Click Clean up to put things right.", "Eight more companions, each with its own silhouette and palette.", "Catch in pairs. Four-square with friends. A little team mischief."]
     Text { x: 34; y: 25; text: "O M A P E T   /   DESKTOP ADVENTURES"; color: "#8fac9e"; font.pixelSize: 11; font.letterSpacing: 2 }
     Text { x: 34; y: 52; text: scene.headings[scene.mode]; color: "#edf5ef"; font.pixelSize: 30; font.bold: true }
     Text { x: 34; y: 96; text: scene.subtitles[scene.mode]; color: "#a8bec4"; font.pixelSize: 14 }
 
     Rectangle {
-        visible: scene.mode !== 3
+        visible: scene.mode < 3
         x: 24; y: 139; width: 912; height: 351; radius: 16; color: "#1a2b35"
         border.color: "#314854"
         // A fictional work surface keeps personal windows out of the documentation.
@@ -92,11 +93,46 @@ Rectangle {
             }
         }
     }
+    Item {
+        visible: scene.mode === 4
+        x: 30; y: 150
+        property var pets: [
+            {id: "1", character: "cat", roaming: true}, {id: "2", character: "android", roaming: true},
+            {id: "3", character: "crab", roaming: true}, {id: "4", character: "octocat", roaming: true},
+            {id: "5", character: "beaver", roaming: true}, {id: "6", character: "gopher", roaming: true}]
+        property var groups: Games.arrange(pets, 900, 340)
+        Repeater {
+            model: parent.groups
+            Item {
+                id: demo
+                required property var modelData
+                property var sample: Games.sample(modelData, 9.2, false)
+                x: modelData.x; y: modelData.y
+                width: modelData.width; height: modelData.height
+                Pet.PlaygroundScene { group: demo.modelData; snapshot: demo.sample }
+                Repeater {
+                    model: demo.sample.actors
+                    Pet.PetSprite {
+                        required property var modelData
+                        x: modelData.x - demo.x; y: modelData.y - demo.y
+                        width: modelData.size; height: modelData.size
+                        character: demo.modelData.members.find(p => p.id === modelData.id).character
+                        effect: modelData.effect; animated: false; drivenFrame: modelData.frame
+                    }
+                }
+                Text {
+                    anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom }
+                    text: demo.modelData.game === "catch" ? "A game of catch" : "Four friends, four squares"
+                    color: "#a8bec4"; font.pixelSize: 12
+                }
+            }
+        }
+    }
     TestCase {
         name: "ReadmeShowcase"
         when: windowShown
         function test_capture() {
-            let names = ["desktop-escape", "desktop-cracks", "desktop-poop", "developer-pets"]
+            let names = ["desktop-escape", "desktop-cracks", "desktop-poop", "developer-pets", "group-play"]
             verify(scene.outputDirectory.length > 0, "Set outputDirectory in the capture wrapper")
             for (let i = 0; i < names.length; i++) {
                 scene.mode = i

@@ -60,16 +60,13 @@ MAX_CRACKS = 4
 BONK_COOLDOWN = 15
 
 
-def bonk(s, x, y, screen='', now=None, kind='crack'):
+def _record_messes(s, x, y, screen, now, kind, participants=None):
     if kind not in ('crack', 'poop'): raise ValueError('Unknown desktop mess')
-    now = time.time() if now is None else now
     x, y = float(x), float(y)
     if not all(math.isfinite(v) and 0 <= v <= 100000 for v in (x, y)):
         raise ValueError('Invalid impact coordinates')
     if not isinstance(screen, str) or len(screen) > 128 or (screen and not screen.isprintable()):
         raise ValueError('Invalid screen name')
-    if not s.get('roaming') or not s.get('overlay') or not can_roam(s):
-        raise ValueError('Only a visible, healthy roaming pet can bonk the screen')
     cracks = s.setdefault('cracks', [])
     if s.get('repairing_cracks'):
         raise ValueError('Repair time: no more bonks until the next outing')
@@ -77,12 +74,42 @@ def bonk(s, x, y, screen='', now=None, kind='crack'):
         raise ValueError('Repair the existing cracks first')
     if now - s.get('last_bonk_at', 0) < BONK_COOLDOWN:
         raise ValueError('Your pet is recovering from its last bonk')
-    crack = dict(id=uuid.uuid4().hex, x=round(x), y=round(y), screen=screen, kind=kind,
-                 seed=secrets.randbits(31))
-    cracks.append(crack)
+    created = []
+    for i in range(min(2 if participants else 1, MAX_CRACKS - len(cracks))):
+        crack = dict(id=uuid.uuid4().hex, x=round(max(0, min(100000, x + (i * 90)))),
+                     y=round(max(0, min(100000, y + (i * 35)))), screen=screen, kind=kind,
+                     seed=secrets.randbits(31))
+        if participants:
+            crack.update(team_size=len(participants), participants=participants)
+        cracks.append(crack)
+        created.append(crack)
     s['last_bonk_at'] = now
     s['message'] = f"{'Oops! Clean up the poop.' if kind == 'poop' else 'Bonk! Repair the crack.'} {len(cracks)} mess(es) left."
-    return crack
+    return created
+
+
+def bonk(s, x, y, screen='', now=None, kind='crack'):
+    now = time.time() if now is None else now
+    if not s.get('roaming') or not s.get('overlay') or not can_roam(s):
+        raise ValueError('Only a visible, healthy roaming pet can bonk the screen')
+    return _record_messes(s, x, y, screen, now, kind)[0]
+
+
+def team_bonk(s, ids, x, y, screen='', now=None):
+    from .collection import find
+    now = time.time() if now is None else now
+    if len(ids) not in (2, 3, 4) or len(set(ids)) != len(ids):
+        raise ValueError('Choose two to four different pets for a team bonk')
+    if not s.get('overlay'): raise ValueError('Show your pets before a team bonk')
+    pets = [find(s, pet_id) for pet_id in ids]
+    if any(not p.get('roaming') or not can_roam(p) for p in pets):
+        raise ValueError('Every teammate must be roaming, awake, healthy, and rested')
+    if now - s.get('last_team_bonk_at', -1e20) < 90:
+        raise ValueError('Your team needs a break before another team bonk')
+    created = _record_messes(s, x, y, screen, now, 'crack', ids)
+    s['last_team_bonk_at'] = now
+    s['message'] = f"Team bonk! {', '.join(p['name'] for p in pets)} teamed up. Repair {len(s['cracks'])} mess(es) before heading home."
+    return created
 
 
 def repair(s, crack_id):

@@ -51,7 +51,9 @@ assets, and Python tests. The QML tests distinguish clicks from drags and verify
 that a drag saves on release. GitHub responses are mocked; arena tests exercise
 a real local HTTP server. Collection tests cover saved pet switching, care XP,
 transfer retries, concurrent adoptions, mailbox capacity, and two-pet rewards.
-The sprite test renders every character across five moods.
+The sprite test renders every character across five moods. Group-play tests cover
+stable grouping, game trajectories, small-screen bounds, shared damage caps,
+cooldowns, and cleanup migration.
 
 On Arch, QML tools are commonly under `/usr/lib/qt6/bin`. To resolve Quattro's
 `qs.Ui` imports for linting, create temporary import aliases outside the plugin:
@@ -77,10 +79,9 @@ restoration have been checked locally. Multi-monitor hot-plug remains unverified
 python3 scripts/render_showcase.py
 ```
 
-This uses Qt's offscreen renderer and `qmltestrunner` to capture four staged demo
-scenes into `docs/screenshots/`: roaming, screen cracks, poop, and the eight new
-companions. `scripts/Showcase.qml` imports the production `PetSprite`, `CrackEffect`,
-and `PetButton` components. Its editor and layout are fictional; the README labels
+This uses Qt's offscreen renderer and `qmltestrunner` to capture five staged demo
+scenes into `docs/screenshots/`: roaming, screen cracks, poop, the eight new companions, and group games. `scripts/Showcase.qml` imports the production `PetSprite`, `CrackEffect`,
+`PetButton`, and `PlaygroundScene` components. Its editor and layout are fictional; the README labels
 the results as staged demos. It does not launch desktop windows, capture personal
 apps, or read or alter the user's pet save. Review every generated PNG before
 committing it. The existing habitat and terminal images are direct application

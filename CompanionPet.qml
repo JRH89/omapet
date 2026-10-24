@@ -1,17 +1,20 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import "Playground.js" as Games
 
 PanelWindow {
     id: root
     required property var pet
     required property var petModel
     required property var targetScreen
+    required property var playground
+    readonly property var activity: playground.pose(pet.id)
     screen: targetScreen
     visible: petModel.pet.overlay === true && pet.roaming === true
     anchors { top: true; left: true }
-    implicitWidth: 144
-    implicitHeight: 150
+    implicitWidth: activity ? activity.size : 144
+    implicitHeight: implicitWidth + 24
     color: "transparent"
     exclusiveZone: 0
     WlrLayershell.layer: WlrLayer.Top
@@ -28,6 +31,11 @@ PanelWindow {
         onTriggered: {
             let now = Date.now(), dt = Math.min(0.08, (now - root.lastTick) / 1000)
             root.lastTick = now
+            if (root.activity) {
+                let next = Games.approach(root.posX, root.posY, root.activity.x, root.activity.y, dt, 270)
+                root.posX = next.x; root.posY = next.y
+                return
+            }
             let maxX = Math.max(0, root.screen.width - root.width)
             let maxY = Math.max(0, root.screen.height - root.height - 32)
             let nx = root.posX + root.speedX * dt, ny = root.posY + root.speedY * dt
@@ -40,15 +48,18 @@ PanelWindow {
     PetSprite {
         id: sprite
         anchors.horizontalCenter: parent.horizontalCenter
+        width: root.width; height: root.width
         character: root.pet.character
         mood: root.pet.mood || root.pet.status
-        effect: "run"
-        transform: Scale { origin.x: sprite.width / 2; xScale: root.speedX > 0 ? -1 : 1 }
+        effect: root.activity ? root.activity.effect : "run"
+        animated: !root.activity
+        drivenFrame: root.activity ? root.activity.frame : -1
+        transform: Scale { origin.x: sprite.width / 2; xScale: (root.activity ? root.activity.faceRight : root.speedX > 0) ? -1 : 1 }
     }
     Rectangle {
         anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter }
         width: Math.min(parent.width, label.implicitWidth + 14); height: 22; radius: 8; color: "#ed17252e"
-        Text { id: label; anchors.centerIn: parent; text: root.pet.name + " · L" + root.pet.level; color: "#d8f3e3"; font.pixelSize: 10 }
+        Text { id: label; anchors.centerIn: parent; text: root.pet.name + (root.activity ? " · " + root.activity.label : " · L" + root.pet.level); color: "#d8f3e3"; font.pixelSize: 10 }
     }
     MouseArea {
         anchors.fill: parent; cursorShape: Qt.PointingHandCursor

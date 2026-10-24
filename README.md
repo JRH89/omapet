@@ -35,6 +35,20 @@ pet to bring it home after cleaning up any messes.
 
 ![Octocat, Rust crab, and Android roaming together across a staged developer desktop](docs/screenshots/desktop-escape.png)
 
+### Better together
+
+**All out** is a playground: two pets pair up for catch, groups of four form a
+four-square game, and any odd pet keeps exploring. You can have several games
+running at once. The balls and courts let mouse clicks pass through to your apps.
+
+![Four pets playing four-square beside a pair tossing a ball, rendered with the actual group-play components](docs/screenshots/group-play.png)
+
+Occasionally a group rallies and charges together for a **team bonk**, leaving
+larger cracks. There is a shared four-mess limit and a cooldown between attacks.
+Starting cleanup stops further bonks until the next outing. Messes stay visible
+when you switch companions, and everyone waits for cleanup before going home.
+The games are desktop animations; use **k → f** for XP-bearing training battles.
+
 <table>
   <tr><th>Bonk! A pretend screen crack</th><th>Oops. Pixel poop.</th></tr>
   <tr>
@@ -105,7 +119,7 @@ without this optional step.
 | Adoption and trading | List pets on a connected private arena. Adopt for free or exchange pets; XP and trained stats travel with them. |
 | Everyday care | Feed, clean, play, rest, and treat sickness. Animated snacks and bubbles confirm actions. |
 | Compact or detailed | One row of icon buttons, or care meters, combat traits, XP, and GitHub activity. |
-| Desktop adventures | Let one pet or the household roam. Surprise escapes, bonks, screen cracks, and pixel poop keep things lively. Click messes to repair or clean up. |
+| Desktop adventures | Pairs play catch, fours play four-square, and teams occasionally coordinate a screen bonk. Surprise escapes and pixel poop still happen. |
 | Time off | Vacation freezes care needs. Gentle mode prevents death; hardcore mode is opt-in. |
 | Training and battles | Pit your own pets against each other in 1v1/2v2 training for XP, or battle online with one or two pets per player. Rewards are capped. |
 | Care progression and moods | Useful care earns XP; low joy causes loneliness and sadness with visible expressions. |

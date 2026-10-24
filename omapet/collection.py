@@ -2,10 +2,12 @@
 from copy import deepcopy
 from .core import fresh, level, status, mood, care
 from .characters import CHARACTERS, choose, rename
+from .desktop import can_roam
 
 # Preferences and contribution high-water marks belong to the household, not traded pets.
 HOUSEHOLD = ('companions', 'overlay', 'desktop_view', 'escapes', 'desktop_position',
              'battle_rewards', 'battle_day', 'battle_count', 'arena_team',
+             'cracks', 'repairing_cracks', 'last_bonk_at', 'last_team_bonk_at',
              'account', 'days', 'synced', 'last_active', 'exchange_pending', 'exchange_received')
 
 
@@ -26,7 +28,7 @@ def find(s, pet_id):
 def summaries(s):
     return [dict(id=p['id'], name=p['name'], character=p['character'], level=level(p),
                  status=status(p), mood=mood(p), active=p['id'] == s['id'],
-                 roaming=p.get('roaming', False))
+                 roaming=p.get('roaming', False), can_roam=can_roam(p))
             for p in all_pets(s)]
 
 
@@ -73,6 +75,20 @@ def receive(s, pet):
     import time
     incoming['updated'] = time.time()  # Escrow is a safe shelter; needs are paused there.
     s.setdefault('companions', {})[pet['id']] = incoming
+
+
+
+def roam(s, mode, pet_id='all'):
+    from .desktop import configure
+    if mode not in ('on', 'off'): raise ValueError('Choose on or off')
+    if mode == 'off' and s.get('cracks'):
+        raise ValueError('Repair all cracks and messes before bringing pets home')
+    pets = all_pets(s) if pet_id == 'all' else [find(s, pet_id)]
+    if mode == 'on' and not s.get('cracks') and any(not p.get('roaming') and can_roam(p) for p in pets):
+        s['repairing_cracks'] = False
+    for pet in pets:
+        if mode == 'off' or can_roam(pet): configure(pet, 'roam', mode)
+    s['overlay'] = True
 
 
 def play_together(s, first, second):

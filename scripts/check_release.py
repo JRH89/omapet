@@ -22,7 +22,8 @@ def check():
         assert (ROOT / path).is_file(), f'Missing entry point: {entry}'
     for name in ['README.md', 'LICENSE', 'CHANGELOG.md', 'PUBLISHING.md', 'preview.png',
                  'docs/screenshots/widget-compact.png', 'docs/screenshots/widget-detailed.png',
-                 'docs/screenshots/tui.png', 'docs/release/marketplace-submission.md']:
+                 'docs/screenshots/tui.png', 'docs/release/marketplace-submission.md',
+                 'Playground.js', 'PlaygroundScene.qml', 'PetPlayground.qml']:
         assert (ROOT / name).is_file(), f'Missing release file: {name}'
     for directory in ('omapet', 'bin', 'integrations', 'scripts', 'tests', 'docs'):
         for path in (ROOT / directory).rglob('*'):

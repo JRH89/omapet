@@ -228,6 +228,10 @@ def store():
         s.setdefault('cracks', [])
         s.setdefault('repairing_cracks', False)
         for companion in s.get('companions', {}).values():
+            # Older saves kept messes on each pet; cleanup now belongs to the household.
+            existing_ids = {c['id'] for c in s['cracks']}
+            s['cracks'].extend(c for c in companion.pop('cracks', []) if c['id'] not in existing_ids)
+            s['repairing_cracks'] = bool(companion.pop('repairing_cracks', False)) or s['repairing_cracks']
             advance(companion)
             if not can_roam(companion): companion['roaming'] = False
         advance(s)

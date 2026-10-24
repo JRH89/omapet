@@ -17,6 +17,6 @@ with tempfile.TemporaryDirectory(prefix='omapet-showcase-') as tmp:
                        ' as Demo\nDemo.Showcase { outputDirectory: ' + json.dumps(str(output)) + ' }\n')
     subprocess.run([runner, '-input', str(wrapper)], check=True, env={**os.environ,
         'QT_QPA_PLATFORM': 'offscreen', 'QT_QUICK_CONTROLS_STYLE': 'Basic', 'QT_QPA_PLATFORMTHEME': ''})
-for name in ('desktop-escape', 'desktop-cracks', 'desktop-poop', 'developer-pets'):
+for name in ('desktop-escape', 'desktop-cracks', 'desktop-poop', 'developer-pets', 'group-play'):
     assert (output / (name + '.png')).stat().st_size > 1000, name
-print('Rendered four staged screenshots in', output)
+print('Rendered five staged screenshots in', output)

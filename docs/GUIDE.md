@@ -78,9 +78,20 @@ GitHub identity and contribution high-water marks belong to the household, so
 switching pets cannot reward the same contribution twice.
 
 Detailed desktop view has **Next pet**, **Hatch**, and **All out** buttons. All out
-releases every eligible pet on the current screen. Click a companion to send it
-home; right-click it to select it. The active pet keeps its original roaming and
-screen-mess behavior. In the collection, **o** releases pets and **i** brings them home
+releases every eligible pet on the current screen. They automatically form groups
+of four for four-square and pairs for catch; a leftover single pet keeps wandering.
+Games share a ball, line up around a court, and smoothly regroup as pets come and
+go. Balls/courts do not capture clicks over your applications. Group play is visual;
+for training XP use the spar controls below.
+
+Occasionally one group gathers, charges, and **team bonks** the desktop. A team
+impact makes up to two larger cracks, within the household's shared limit of four
+cracks or poop piles. A team can attack at most once every 90 seconds, and cleanup
+pauses further damage until a new outing. Ineligible pets leave games automatically.
+Hiding/showing pets starts a new game session rather than jumping into an old attack.
+Click a companion to send it home after cleanup; right-click it to select it.
+Screen messes and cooldowns belong to the household and remain visible after switching
+pets. Solo pets retain their normal roaming, bonks and surprise escapes. In the collection, **o** releases pets and **i** brings them home
 (after repairing any active-pet messes).
 
 Select a different pet from the active one and press **p** to play together or

@@ -3,6 +3,8 @@ import QtQuick
 Item {
     id: root
     property int seed: 1
+    property int power: 1
+    onPowerChanged: glass.requestPaint()
     property string messKind: "crack"
     onMessKindChanged: glass.requestPaint()
     property bool fixing: false
@@ -33,8 +35,8 @@ Item {
             let state = root.seed % 233280
             function random() { state = (state * 9301 + 49297) % 233280; return state / 233280 }
             let cx = width / 2, cy = height / 2, rays = []
-            for (let i = 0; i < 7; i++) {
-                let angle = i * Math.PI * 2 / 7 + (random() - 0.5) * 0.35
+            for (let i = 0; i < 7 + Math.min(3, Math.max(0, root.power - 1)) * 2; i++) {
+                let angle = i * Math.PI * 2 / (7 + Math.min(3, Math.max(0, root.power - 1)) * 2) + (random() - 0.5) * 0.35
                 let length = 42 + random() * 28
                 let points = [[cx,cy]]
                 for (let n = 1; n <= 3; n++) {

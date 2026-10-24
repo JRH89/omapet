@@ -212,11 +212,7 @@ def dashboard(screen, worker):
                     with store() as state: collection.switch(state, pets[selected]['id'])
                     selected = 0
                 elif key in map(ord, 'oi'):
-                    from .desktop import configure, can_roam
-                    with store() as state:
-                        for pet in collection.all_pets(state):
-                            if key == ord('i') or can_roam(pet): configure(pet, 'roam', 'off' if key == ord('i') else 'on')
-                        state['overlay'] = True
+                    with store() as state: collection.roam(state, 'off' if key == ord('i') else 'on')
                 elif key == ord('p'):
                     with store() as state: collection.play_together(state, state['id'], pets[selected]['id'])
                     message = state['message']

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Turn All out into shared desktop games: catch in pairs, four-square in groups of
+  four, smooth regrouping, and click-through balls/courts over your desktop.
+- Let roaming teams rally and charge for coordinated bonks with stronger cracks,
+  a shared four-mess limit, and saved cooldown/eligibility checks.
+- Preserve screen messes across pet switches and migrate older companion messes
+  into household cleanup. Avoid rebuilding roaming windows on every status poll.
+
 - Automatically sync GitHub in the background on TUI/widget startup and desktop
   reveal, with a shared 60-second cooldown and overlap prevention. Keep care
   usable offline and assign XP to the pet selected when the sync began.

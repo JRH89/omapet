@@ -6,11 +6,14 @@ Item {
     property string character: "cat"
     property string effect: ""
     property int frame: 0
+    property int drivenFrame: -1
     property bool animated: true
     implicitWidth: 144
     implicitHeight: 126
     readonly property var palettes: ({cat: "#e8c9ad", fox: "#efa76e", bunny: "#d4b5e8", frog: "#a6cf72", bear: "#cda67f", owl: "#93b9dd", slime: "#84d8cf", robot: "#c1c8d8", penguin: "#526b85", snake: "#97ce79", gopher: "#ba936d", duck: "#f5d461", octocat: "#ab9dd9", android: "#a4c639", crab: "#f18a61", whale: "#6bb9e8", elephant: "#8ba4ce", camel: "#d5b17d", beaver: "#8bbcb2", bug: "#df87b2"})
     Timer { interval: root.effect === "run" ? 50 : 100; running: root.visible && root.animated; repeat: true; onTriggered: { root.frame++; art.requestPaint() } }
+    onFrameChanged: art.requestPaint()
+    onDrivenFrameChanged: art.requestPaint()
     onMoodChanged: art.requestPaint()
     onCharacterChanged: art.requestPaint()
     onEffectChanged: art.requestPaint()
@@ -26,7 +29,7 @@ Item {
             let c = getContext("2d"); c.reset();
             let scale = Math.min(canvasSize.width / 144, canvasSize.height / 126);
             c.scale(scale, scale); c.translate(12, 8);
-            let f = root.frame, kind = root.character;
+            let f = root.drivenFrame >= 0 ? root.drivenFrame : root.frame, kind = root.character;
             let eating = root.effect === "feed", washing = root.effect === "clean";
             let asleep = root.mood === "sleeping";
             function rect(x,y,w,h,col) { c.fillStyle=col; c.fillRect(x,y,w,h) }
@@ -61,7 +64,7 @@ Item {
             }
             oval(22, 96, 76, 9, "#10232b");
             c.save();
-            let bob = root.effect === "run" ? (kind === "snake" ? Math.sin(f * 0.6) * 2 : Math.abs(Math.sin(f * 0.8)) * -8) : asleep ? Math.sin(f/8) : Math.sin(f/4)*2;
+            let bob = root.effect === "run" ? (kind === "snake" ? Math.sin(f * 0.6) * 2 : Math.abs(Math.sin(f * 0.8)) * -8) : root.effect === "catch" || root.effect === "four-square" ? -Math.abs(Math.sin(f/3))*5 : asleep ? Math.sin(f/8) : Math.sin(f/4)*2;
             c.translate(eating ? Math.sin(f*1.5)*2 : 0, eating ? Math.abs(Math.sin(f/2))*-5 : bob);
             let body = root.mood === "sick" ? "#c5b86c" : root.mood === "departed" ? "#8c98a3" : (root.palettes[kind] || root.palettes.cat);
             if (kind === "octocat") {

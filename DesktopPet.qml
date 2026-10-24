@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import "Playground.js" as Games
 
 Item {
     id: root
@@ -10,6 +11,8 @@ Item {
     readonly property bool detailed: model.pet.desktop_view === "detailed"
     readonly property int crackCount: (model.pet.cracks || []).length
     readonly property bool roaming: model.pet.roaming === true && (model.pet.can_roam === true || crackCount > 0)
+    readonly property var activity: director.pose(model.pet.id)
+    PetPlayground { id: director; petModel: root.model; targetScreen: root.selectedScreen }
     property var crackItems: []
     property bool bonking: false
     property double nextBonk: 0
@@ -21,7 +24,7 @@ Item {
     }
     function tryBonk(kind = "crack") {
         let p = model.pet, now = Date.now()
-        if (!roaming || !p.overlay || !p.can_roam || p.repairing_cracks || crackCount >= 4 || now < nextBonk) return
+        if ((director.count >= 2 && kind === "crack") || !roaming || !p.overlay || !p.can_roam || p.repairing_cracks || crackCount >= 4 || now < nextBonk) return
         if (now / 1000 - (p.last_bonk_at || 0) < 15) return
         nextBonk = now + 15000
         model.run(["bonk", String(Math.round(roamX + 72 + (velocityX < 0 ? -25 : 25))),
@@ -94,11 +97,12 @@ Item {
         }
     }
     Variants {
-        model: (root.model.pet.pets || []).filter(p => !p.active && p.roaming)
+        model: (root.model.pet.pets || []).filter(p => !p.active && p.roaming).map(p => p.id)
         delegate: Component {
             CompanionPet {
                 required property var modelData
-                pet: modelData
+                pet: (root.model.pet.pets || []).find(p => p.id === modelData) || ({})
+                playground: director
                 petModel: root.model
                 targetScreen: root.selectedScreen
             }
@@ -119,6 +123,12 @@ Item {
         onTriggered: {
             let now = Date.now(), dt = Math.min(0.08, Math.max(0, now - root.lastTick) / 1000)
             root.lastTick = now
+            if (root.activity) {
+                let next = Games.approach(root.roamX, root.roamY, root.activity.x, root.activity.y, dt, 270)
+                root.roamX = next.x; root.roamY = next.y
+                root.velocityX = root.activity.faceRight ? 88 : -88
+                return
+            }
             let maxX = Math.max(0, habitat.screen.width - habitat.width - 8)
             let maxY = Math.max(0, habitat.screen.height - habitat.height - 48)
             let nx = root.roamX + root.velocityX * dt, ny = root.roamY + root.velocityY * dt
@@ -154,8 +164,8 @@ Item {
         anchors { top: true; left: true }
         margins.left: Math.round(root.roaming ? root.roamX : Math.max(0, Math.min(screen.width - width, root.position ? root.position.x : screen.width - width - 24)))
         margins.top: Math.round(root.roaming ? root.roamY : Math.max(0, Math.min(screen.height - height - 32, root.position ? root.position.y : screen.height - height - 50)))
-        implicitWidth: root.roaming ? 144 : root.detailed ? 276 : 218
-        implicitHeight: root.roaming ? 148 : content.implicitHeight + (root.detailed ? 47 : 37)
+        implicitWidth: root.roaming ? (root.activity ? root.activity.size : 144) : root.detailed ? 276 : 218
+        implicitHeight: root.roaming ? habitat.implicitWidth + 24 : content.implicitHeight + (root.detailed ? 47 : 37)
         color: "transparent"
         exclusiveZone: 0
         WlrLayershell.layer: WlrLayer.Top
@@ -284,14 +294,17 @@ Item {
             PetSprite {
                 id: runner
                 anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width; height: parent.width
                 mood: root.model.pet.mood || root.model.pet.status; character: root.model.pet.character || "cat"
-                effect: root.bonking ? "bonk" : root.model.pet.can_roam ? "run" : ""
+                animated: !root.activity
+                drivenFrame: root.activity ? root.activity.frame : -1
+                effect: root.activity ? root.activity.effect : root.bonking ? "bonk" : root.model.pet.can_roam ? "run" : ""
                 transform: Scale { origin.x: runner.width / 2; xScale: root.velocityX > 0 ? -1 : 1 }
             }
             Rectangle {
                 anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter }
                 width: Math.min(parent.width, returnLabel.implicitWidth + 14); height: 22; radius: 8; color: "#ed17252e"
-                Text { id: returnLabel; anchors.centerIn: parent; text: root.bonking ? "Bonk!" : root.crackCount > 0 ? "⚒ " + root.crackCount + " to fix first" : "Click to go home"; color: root.crackCount > 0 ? "#e9b47f" : "#d8f3e3"; font.pixelSize: 10 }
+                Text { id: returnLabel; anchors.centerIn: parent; text: root.bonking ? "Bonk!" : root.activity ? root.activity.label : root.crackCount > 0 ? "⚒ " + root.crackCount + " to fix first" : "Click to go home"; color: root.crackCount > 0 ? "#e9b47f" : "#d8f3e3"; font.pixelSize: 10 }
             }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.home() }
         }
