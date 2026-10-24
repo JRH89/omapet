@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Give new pets character names instead of Sprout, with numbered names for repeat
+  household characters. Odd groups play keep-away; the pet who loses the ball
+  becomes the next chaser.
+
 - Turn All out into shared desktop games: catch in pairs, four-square in groups of
   four, smooth regrouping, and click-through balls/courts over your desktop.
 - Let roaming teams rally and charge for coordinated bonks with stronger cracks,

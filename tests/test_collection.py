@@ -10,6 +10,16 @@ from omapet.arena import Arena
 
 
 class CollectionTests(unittest.TestCase):
+    def test_random_hatch_names_match_character_and_avoid_duplicates(self):
+        with patch('omapet.characters.random_character', return_value='crab'):
+            s = core.fresh('Home')
+            a = collection.hatch(s, 'random')
+            b = collection.hatch(s, 'random')
+            self.assertEqual((a['name'], b['name']), ('Ferris', 'Ferris 2'))
+            self.assertEqual(collection.hatch(s, 'random', 'Custom')['name'], 'Custom')
+        with patch('omapet.core.random_character', return_value='fox'):
+            self.assertEqual(core.fresh()['name'], 'Ember')
+
     def test_switch_and_reload_preserve_progress_and_household_ledger(self):
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, OMAPET_HOME=tmp):
             with core.store() as s:

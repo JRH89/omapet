@@ -9,7 +9,7 @@ from pathlib import Path
 import tempfile
 import time
 import uuid
-from .characters import random_character
+from .characters import random_character, CHARACTERS
 from .desktop import can_roam, roam_block_reason
 
 KINDS = ('commits', 'prs', 'issues', 'reviews')
@@ -22,8 +22,10 @@ def data_dir():
     return Path(os.environ.get('OMAPET_HOME', Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'omapet'))
 
 
-def fresh(name='Sprout', now=None):
-    return dict(character=random_character(), version=1, id=str(uuid.uuid4()), name=name[:24], born=now or time.time(),
+def fresh(name=None, now=None):
+    character = random_character()
+    name = name or CHARACTERS[character][0]
+    return dict(character=character, version=1, id=str(uuid.uuid4()), name=name[:24], born=now or time.time(),
                 updated=now or time.time(), xp=0, health=100., food=85., energy=85.,
                 hygiene=100., joy=80., sleeping=False, vacation=False, hardcore=False,
                 dead=False, sick=False, neglect=0., totals={k: 0 for k in KINDS},

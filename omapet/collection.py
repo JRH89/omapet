@@ -34,8 +34,16 @@ def summaries(s):
 
 def hatch(s, character, name=None):
     if len(all_pets(s)) >= 24: raise ValueError('Your household is full (24 pets)')
-    p = fresh(name or CHARACTERS.get(character, ('Sprout',))[0])
+    p = fresh(name)
     choose(p, character)
+    if not name:
+        base = CHARACTERS[p['character']][0]
+        used = {pet['name'] for pet in all_pets(s)}
+        p['name'] = base
+        suffix = 2
+        while p['name'] in used:
+            p['name'] = f'{base} {suffix}'
+            suffix += 1
     if name: rename(p, name)
     s.setdefault('companions', {})[p['id']] = p
     s['message'] = f"{p['name']} joined your household!"

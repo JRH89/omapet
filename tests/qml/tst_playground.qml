@@ -19,7 +19,7 @@ Rectangle {
         function test_pairs_fours_and_single_odd_pet() {
             compare(Games.arrange(scene.members(1), 1920, 1080).length, 0)
             compare(Games.arrange(scene.members(2), 1920, 1080)[0].game, "catch")
-            compare(Games.arrange(scene.members(3), 1920, 1080)[0].members.length, 2)
+            compare(Games.arrange(scene.members(3), 1920, 1080)[0].members.length, 3)
             let six = Games.arrange(scene.members(6), 1920, 1080)
             compare(six.length, 2)
             compare(six[0].game, "four-square")
@@ -63,6 +63,16 @@ Rectangle {
             compare(Games.sample(group, 78, true).mode, "catch")
             compare(Games.sample(group, 72, false).mode, "catch")
         }
+        function test_keep_away_handoffs() {
+            for (let count of [3,5,7,9,23]) {
+                let groups = Games.arrange(scene.members(count), 1920, 1080)
+                compare(groups.reduce((n,g) => n + g.members.length, 0), count)
+                let g = groups.filter(g => g.game === "keep-away")[0]
+                for (let t = 0; t < 40; t += 8) {
+                    compare(Games.sample(g, t, false).loser, Games.sample(g, t + 8, false).chaser)
+                }
+            }
+        }
         function test_motion_is_bounded_and_does_not_overshoot() {
             let next = Games.approach(0, 0, 300, 400, .1, 200)
             fuzzyCompare(Math.sqrt(next.x*next.x + next.y*next.y), 20, .001)
@@ -70,7 +80,7 @@ Rectangle {
             compare(next.x, 3); compare(next.y, 4)
         }
         function test_game_visuals_render() {
-            for (let size of [2,4]) for (let time of [4,65,72]) {
+            for (let size of [2,3,4,5]) for (let time of [4,65,72]) {
                 scene.currentGroup = Games.arrange(scene.members(size), 900, 360)[0]
                 scene.snapshot = Games.sample(scene.currentGroup, time, true)
                 wait(5)

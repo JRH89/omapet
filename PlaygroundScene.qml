@@ -24,7 +24,7 @@ Item {
         }
     }
     Item {
-        visible: root.snapshot.mode === "catch" || root.snapshot.mode === "four-square"
+        visible: root.snapshot.mode === "catch" || root.snapshot.mode === "four-square" || root.snapshot.mode === "keep-away"
         x: root.snapshot.ball.x - 8; y: root.snapshot.ball.y - 8
         width: 16; height: 16; scale: root.snapshot.ball.scale
         Rectangle { x: -3; y: 25; width: 22; height: 5; radius: 3; color: "#44101d25" }
